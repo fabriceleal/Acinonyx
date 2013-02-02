@@ -26,6 +26,7 @@
 		river
 	} r_value;
 
+	void *ptr;
 }
 
 //%token WHITESPACE
@@ -47,6 +48,7 @@
 %token <r_value> PHASE
 
 
+%type <ptr> card_star
 %type <i_value> board
 %type <i_value> decl_date
 %type <i_value> decl_table
@@ -101,6 +103,7 @@ decl_table: WORD WORD WORD NUMBER DASH WORD NEW_LINE {
 
 decl_date: WORD NUMBER COMMA NUMBER DASH NUMBER COLON NUMBER COLON NUMBER OPEN_PARE WORD CLOSE_PARE NEW_LINE {
 	free($1); free($12);
+
 	$$ = 0;
 }
            ;
@@ -121,7 +124,9 @@ decl_player_star: decl_player decl_player_star
                 | decl_player
                 ;
 
-round: board action_star NEW_LINE
+round: board action_star NEW_LINE {
+	
+}
      ;
 
 round_star: round round_star
@@ -129,28 +134,27 @@ round_star: round round_star
           ;
 
 board: PHASE COLON card_star NEW_LINE {
-	switch( $1 ) {
-	case 0:
-		break;
-	case 1:
-		break;
-	case 2:
-		break;
-	case 3:
-		break;
-	}
-
+	
 	$$ = 0;
 }
      ;
 
 card_star: CARD card_star {
 //--
-	
+	//Card c;
+	//c.rank = $1[0];
+	//c.suit = $1[1];
+	list_item_Card* r = new_itemCard($1);
+	append_itemCard(r, (list_item_Card*) $2);
+  $$ = (void*) r;
 }
          | CARD {
 //--
-
+	//Card c;
+	//c.rank = $1[0];
+	//c.suit = $1[1];
+	list_item_Card* r = new_itemCard($1);
+  $$ = (void*) r;
 }
          ;
 

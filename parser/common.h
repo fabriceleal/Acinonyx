@@ -24,19 +24,6 @@
 		exit(-1);																						\
 	}
 
-#  define DECLARE_LIST(type)											\
-	typedef struct _list_item_ ## type {					\
-		type value;																	\
-		struct _list_item_ ## type *next;						\
-	} list_item_ ## type ;												\
-	void insert_to_list_ ## type (list_item_ ## type head,	\
-							list_item_ ## type tail) {				\
-																								\
-																								\
-	}
-																							/**/
-DECLARE_LIST(int)
-
 typedef struct {
 	char rank;
 	char suit;
@@ -67,5 +54,15 @@ typedef struct {
 } Hand;
 
 Hand *hand;
+
+
+typedef struct _list_item_Card {
+	Card card;
+	struct _list_item_Card *next;
+} list_item_Card;
+
+list_item_Card* new_itemCard(char c[2]);
+
+void append_itemCard(list_item_Card* new_head, list_item_Card* tail);
 
 #endif
