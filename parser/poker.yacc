@@ -49,7 +49,8 @@
 
 
 %type <ptr> card_star
-%type <i_value> board
+%type <ptr> board
+%type <ptr> round
 %type <i_value> decl_date
 %type <i_value> decl_table
 %type <i_value> decl_hand
@@ -125,7 +126,7 @@ decl_player_star: decl_player decl_player_star
                 ;
 
 round: board action_star NEW_LINE {
-	
+	$$ = $1;
 }
      ;
 
@@ -135,7 +136,7 @@ round_star: round round_star
 
 board: PHASE COLON card_star NEW_LINE {
 	
-	$$ = 0;
+	$$ = $3;
 }
      ;
 
