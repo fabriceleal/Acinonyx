@@ -1,5 +1,0 @@
-FLAGS=-lrt
-
-aio_tests: aio_tests.c
-	gcc $^ -o $@ $(FLAGS)
-

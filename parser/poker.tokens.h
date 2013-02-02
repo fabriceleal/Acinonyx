@@ -1,3 +1,5 @@
+#ifndef _POKER_TOKENS_H
+#define _POKER_TOKENS_H
 
 typedef enum {
 	WHITESPACE = 255,
@@ -16,3 +18,5 @@ typedef enum {
 	STAR,
 	COMMA
 } e_tokens;
+
+#endif
