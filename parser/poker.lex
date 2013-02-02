@@ -183,15 +183,21 @@ void yyerror(char *s) {
 	fprintf(stderr, "%d: %s at '%s'\n", lineno, s, yytext);
 }
 
+void print_hand(Hand *h) {
+	printf("HAND\n");
+	printf("Id: %d\n", h->id);
+	printf("Small: %.2f\n", h->blind.small);
+	printf("Big: %.2f\n", h->blind.big);	
+}
+
 int main(int argc, char** argv) {
 	int val;
 
 	// Parse!
 	yyparse();
 
-	//printf("HAND\n");
-	//	printf("Id: %d\n", hand.id);
-
+	print_hand(hand);
+	
 	// Lex!
 	//while(val = yylex()) {
 		//		dprintf("value is %d\n", val);

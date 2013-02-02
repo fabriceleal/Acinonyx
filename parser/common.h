@@ -23,22 +23,36 @@
 		fprintf(stderr, msg, ##args);												\
 		exit(-1);																						\
 	}
-/*
-typedef struct tag_s_blinds {
-		float f_small;
-		float f_big;
-} s_blinds;
-
-typedef enum tag_e_rounds {
-		preflop,
-		flop,
-		turn,
-		river
-} e_rounds;
 
 typedef struct {
-	  int id;
-	  s_blinds blinds;
-} s_hand;
-*/
+	char rank;
+	char suit;
+} Card;
+
+typedef struct {
+	float small;
+	float big;
+} Blind;
+
+typedef struct {
+	char* name;
+	float stack;
+	Card card[2];
+} Player;
+
+typedef struct {
+	
+} Action;
+
+typedef struct {
+
+} Round;
+
+typedef struct {
+	int id;
+	Blind blind;
+} Hand;
+
+Hand *hand;
+
 #endif
