@@ -35,12 +35,7 @@
 																								\
 	}
 																							/**/
-
-//typedef char char_2[2];
-
-DECLARE_LIST(char)
 DECLARE_LIST(int)
-//DECLARE_LIST(char_2)
 
 typedef struct {
 	char rank;
