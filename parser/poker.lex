@@ -1,10 +1,10 @@
 %{
 
 	//#include "poker.tokens.h"
-#include "y.tab.h"
-#include "common.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "y.tab.h"
+#include "common.h"
 
 int lineno = 0;
 

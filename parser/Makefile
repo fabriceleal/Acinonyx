@@ -4,7 +4,7 @@
 all: poker
 
 poker: lex.yy.c y.tab.c y.tab.h
-	cc $^ -o $@ -ll -ly
+	cc lex.yy.c y.tab.c -o $@ -ll -ly
 
 lex.yy.c: poker.lex
 	lex $^

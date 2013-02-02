@@ -44,9 +44,10 @@
 %token HAND_END
 %token STAR
 %token COMMA
-%token PHASE
+%token <r_value> PHASE
 
 
+%type <i_value> board
 %type <i_value> decl_date
 %type <i_value> decl_table
 %type <i_value> decl_hand
@@ -107,7 +108,7 @@ decl_date: WORD NUMBER COMMA NUMBER DASH NUMBER COLON NUMBER COLON NUMBER OPEN_P
 decl_player: NUMBER player_type WORD STAR VALUE CARD CARD NEW_LINE {
 	free($3);
 }
-| NUMBER player_type WORD      VALUE CARD CARD NEW_LINE {
+           | NUMBER player_type WORD      VALUE CARD CARD NEW_LINE {
 	free($3);
 }
            ;
@@ -127,24 +128,46 @@ round_star: round round_star
           | round
           ;
 
-board: PHASE COLON card_star NEW_LINE
+board: PHASE COLON card_star NEW_LINE {
+	switch( $1 ) {
+	case 0:
+		break;
+	case 1:
+		break;
+	case 2:
+		break;
+	case 3:
+		break;
+	}
+
+	$$ = 0;
+}
      ;
 
-card_star: CARD card_star
-         | CARD
+card_star: CARD card_star {
+//--
+	
+}
+         | CARD {
+//--
+
+}
          ;
 
 action: WORD WORD WORD WORD VALUE NEW_LINE {
+//--
 	free($1); free($2); free($3); free($4); 
-
+	
 }
-| WORD WORD VALUE NEW_LINE {
+      | WORD WORD VALUE NEW_LINE {
+// --
 	free($1); free($2);
-
+	
 }
-| WORD WORD NEW_LINE {
+      | WORD WORD NEW_LINE {
+//--
 	free($1); free($2);
-
+	
 }
       ;
 

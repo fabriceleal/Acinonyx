@@ -1,28 +1,46 @@
 #ifndef COMMON_H
-#define COMMON_H
+#  define COMMON_H
 
 
-#define __DEBUG_INFO
+#  define __DEBUG_INFO
 
 // debug print
-#ifdef __DEBUG_INFO
+#  ifdef __DEBUG_INFO
 
-#  define dprintf(s, args...)	fprintf(stderr, (s), ##args)
+#    define dprintf(s, args...)	fprintf(stderr, (s), ##args)
 
-#else
+#  else
 
-#  define dprintf(s, ...)
+#    define dprintf(...)
 
-#endif
+#  endif
 
 // Check condition, fail if true
 // print messages
-#define FAIL_IF(cond, msg, args...)											\
+#  define FAIL_IF(cond, msg, args...)											\
 	if(cond) {																						\
 		fprintf(stderr, "Condition (%s) failed!\n", #cond); \
 		fprintf(stderr, msg, ##args);												\
 		exit(-1);																						\
 	}
+
+#  define DECLARE_LIST(type)											\
+	typedef struct _list_item_ ## type {					\
+		type value;																	\
+		struct _list_item_ ## type *next;						\
+	} list_item_ ## type ;												\
+	void insert_to_list_ ## type (list_item_ ## type head,	\
+							list_item_ ## type tail) {				\
+																								\
+																								\
+	}
+																							/**/
+
+//typedef char char_2[2];
+
+DECLARE_LIST(char)
+DECLARE_LIST(int)
+//DECLARE_LIST(char_2)
 
 typedef struct {
 	char rank;
