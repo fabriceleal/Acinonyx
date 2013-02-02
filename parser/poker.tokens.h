@@ -3,6 +3,7 @@
 
 typedef enum {
 	WHITESPACE = 255,
+	CARD,
 	NEW_LINE,
 	WORD,
 	VALUE,

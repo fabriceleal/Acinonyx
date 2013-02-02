@@ -15,37 +15,47 @@
 #endif
 
 %}
+
+numeric [0-9]+
+letters [a-zA-Z]+
+card [AKQJT2-9][hscd]
+
 %%
 
 \r     /* ignore carriage return */ ;
 
-[\t ]+ {
+[\t ]+ ; /* {
 	dprintf("whitespace ");
 	return WHITESPACE;
-}
+	}*/
 
 \n {
 	dprintf("\n");
 	return NEW_LINE;
 }
 
-[a-zA-Z]+ {
-	dprintf("word ");
+{card} {
+	dprintf("card(%s) ", yytext);
+	return CARD;
+}
+
+{letters} {
+	dprintf("word(%s) ", yytext);
 	return WORD;
 }
 
-\$[0-9]+(\.[0-9]+)? {
-	dprintf("value "); 
+\${numeric}(\.{numeric})? {
+	dprintf("value(%s) ", yytext); 
 	return VALUE;
 }
 
-#[0-9]+(\,[0-9]{3})* {
-	dprintf("id ");
+#{numeric}(\,{numeric}{3})* {
+  dprintf("id(%s) ", yytext);
 	return ID;
 }
 
-[0-9]+ {
-	dprintf("number ");
+{numeric} {
+	dprintf("number(%s) ", yytext);
 	return NUMBER;
 }
 
@@ -75,7 +85,7 @@
 }
 
 \} {
-	dprintf("clos-bracket ");
+	dprintf("clos-brac ");
 	return CLOSE_BRACK;
 }
 
