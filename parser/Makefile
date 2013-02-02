@@ -3,8 +3,8 @@
 
 all: poker
 
-poker: lex.yy.c
-	cc $^ -o $@ -ll
+poker: lex.yy.c y.tab.c y.tab.h
+	cc $^ -o $@ -ll -ly
 
 lex.yy.c: poker.lex
 	lex $^

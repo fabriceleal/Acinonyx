@@ -1,8 +1,11 @@
 %{
 
-#include "poker.tokens.h"
+	//#include "poker.tokens.h"
+#include "y.tab.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+	//extern int yylval;
 
 #define __DEBUG_INFO
 
@@ -50,19 +53,9 @@ river RIVER
 	return NEW_LINE;
 }
 
-{flop} {
-	dprintf("flop ");
-	return FLOP;
-}
-
-{turn} {
-	dprintf("turn ");
-	return TURN;
-}
-
-{river} {
-	dprintf("river ");
-	return RIVER;
+{flop}|{turn}|{river} {
+	dprintf("phase ");
+	return PHASE;
 }
 
 {card} {
@@ -76,18 +69,40 @@ river RIVER
 }
 
 \${numeric}(\.{numeric})? {
-	dprintf("value(%s) ", yytext); 
+	// exclude the initial '$' char
+	yylval.f_value = atof(yytext + 1); 
+
+	dprintf("value(%s parsed as %.2f) ", yytext, yylval.f_value);
+
 	return VALUE;
 }
 
 #{numeric}(\,{numeric}{3})* {
-  dprintf("id(%s) ", yytext);
-	return ID;
+  // we need to treat the string  
+  int i = 0, y = 0, len = strlen(yytext);
+  char* _id_ptr = malloc(len + 1);
+  bzero(_id_ptr, len + 1);
+ 
+  // Copy only numeric chars
+  for(; i < len; ++i) {
+		if(yytext[i] >= '0' && yytext[i] <= '9') {
+			_id_ptr[y++] = yytext[i];
+		}
+  }
+
+  yylval.i_value = atoi(_id_ptr);
+ 
+  dprintf("id(%s parsed as %d) ", yytext, yylval.i_value);
+
+  free(_id_ptr);
+
+  return ID;
 }
 
 {numeric} {
-	dprintf("number(%s) ", yytext);
-	return NUMBER;
+	yylval.f_value = atof(yytext);
+  dprintf("number(%s parsed as %.2f) ", yytext, yylval.f_value);
+  return NUMBER;
 }
 
 \( {

@@ -1,7 +1,7 @@
 #ifndef _POKER_TOKENS_H
 #define _POKER_TOKENS_H
 
-typedef enum {
+/*typedef enum {
 	WHITESPACE = 255,
 	CARD,
 	NEW_LINE,
@@ -22,5 +22,6 @@ typedef enum {
 	TURN,
 	RIVER
 } e_tokens;
+*/
 
 #endif
