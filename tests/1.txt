@@ -1,0 +1,30 @@
+Poker Academy Pro #1,641
+Limit Texas Holdem ($1/$2)
+Table Short Handed 5-Max
+January 22, 2013 - 20:38:43 (GMT)
+
+ 1} Leal         $200  Ah Jd
+ 3) Sanja *      $200  Qc 5h
+ 5) Crusoe       $200  Kc Ts
+
+Crusoe posts small blind $0.50
+Leal posts big blind $1
+Sanja folds
+Crusoe raises $1
+Leal calls $1 
+
+FLOP:  3d Tc Qd
+Crusoe bets $1
+Leal calls $1 
+
+TURN:  3d Tc Qd 9c
+Crusoe checks
+Leal checks
+
+RIVER:  3d Tc Qd 9c 4c
+Crusoe bets $2
+Leal folds
+
+Crusoe wins $6 uncontested
+
+******************************
