@@ -25,6 +25,4 @@ RIVER:  3d Tc Qd 9c 4c
 Crusoe bets $2
 Leal folds
 
-Crusoe wins $6 uncontested
-
 ******************************

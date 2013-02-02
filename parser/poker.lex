@@ -2,33 +2,17 @@
 
 	//#include "poker.tokens.h"
 #include "y.tab.h"
+#include "common.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-	//extern int yylval;
+int lineno = 0;
 
-#define __DEBUG_INFO
-
-// debug print
-#ifdef __DEBUG_INFO
-
-#  define dprintf(s, args...)	fprintf(stderr, (s), ##args)
-
-#else
-
-#  define dprintf(s, ...)
-
+#define _POKER_LEX_NO_DEBUG
+#ifdef _POKER_LEX_NO_DEBUG
+#undef dprintf
+#define dprintf(...)
 #endif
-
-// Check condition, fail if true
-// print messages
-#define FAIL_IF(cond, msg, args...)											\
-	if(cond) {																						\
-		fprintf(stderr, "Condition (%s) failed!\n", #cond); \
-		fprintf(stderr, msg, ##args);												\
-		exit(-1);																						\
-	}
-
 
 %}
 
@@ -49,22 +33,50 @@ river RIVER
 	}*/
 
 \n {
-	dprintf("\n");
+	dprintf(".\n");
+
+	++lineno;
+
 	return NEW_LINE;
 }
 
 {flop}|{turn}|{river} {
-	dprintf("phase ");
+
+	if(!strcmp(yytext, "FLOP")) {
+		yylval.r_value = flop;
+	} else if(!strcmp(yytext, "TURN")) {
+		yylval.r_value = turn;		
+	} else if(!strcmp(yytext, "RIVER")) {
+		yylval.r_value = river;
+	} else {
+		yylval.r_value = 0;
+	}
+
+	dprintf("phase(%d) ", yylval.r_value);
+	
 	return PHASE;
 }
 
 {card} {
-	dprintf("card(%s) ", yytext);
+	memcpy(yylval.card_value, yytext, sizeof(yylval.card_value));
+
+	dprintf("card(%c%c) ", yylval.card_value[0], yylval.card_value[1]);
+
 	return CARD;
 }
 
 {letters} {
-	dprintf("word(%s) ", yytext);
+	// ATTENTION: malloc without free!
+	int len = strlen(yytext);
+	char* long_string = malloc(len + 1);
+
+	bzero(long_string, len + 1);
+	strcpy(long_string, yytext);
+	
+	yylval.s_value = long_string;
+
+	dprintf("word(%s) ", yylval.s_value);
+
 	return WORD;
 }
 
@@ -72,7 +84,7 @@ river RIVER
 	// exclude the initial '$' char
 	yylval.f_value = atof(yytext + 1); 
 
-	dprintf("value(%s parsed as %.2f) ", yytext, yylval.f_value);
+	dprintf("value(%.2f) ", yylval.f_value);
 
 	return VALUE;
 }
@@ -92,7 +104,7 @@ river RIVER
 
   yylval.i_value = atoi(_id_ptr);
  
-  dprintf("id(%s parsed as %d) ", yytext, yylval.i_value);
+  dprintf("id(%d) ", yylval.i_value);
 
   free(_id_ptr);
 
@@ -101,57 +113,93 @@ river RIVER
 
 {numeric} {
 	yylval.f_value = atof(yytext);
-  dprintf("number(%s parsed as %.2f) ", yytext, yylval.f_value);
+
+  dprintf("number(%.2f) ", yylval.f_value);
+
   return NUMBER;
 }
 
 \( {
 	dprintf("open-pare ");
+
 	return OPEN_PARE;
 }
 
 \) {
 	dprintf("clos-pare ");
+
+	//	yylval.c_value = ')';
+
 	return CLOSE_PARE;
 }
 
 \/ {
 	dprintf("bar ");
+
 	return BAR;
 }
 
 \- {
 	dprintf("dash ");
+
 	return DASH;
 }
 
 \: {
 	dprintf("colon ");
+
 	return COLON;
 }
 
 \} {
 	dprintf("clos-brac ");
+
+	//	yylval.c_value = '}';
+
 	return CLOSE_BRACK;
 }
 
 \*{30} {
 	dprintf("hand-end ");
+
 	return HAND_END;
 }
 
 \* {
 	dprintf("star ");
+
 	return STAR;
 }
 
 \, {
 	dprintf("comma ");
+
 	return COMMA;
 }
 
 %%
 
+void yyerror(char *s) {
+	fprintf(stderr, "%d: %s at '%s'\n", lineno, s, yytext);
+}
+
+int main(int argc, char** argv) {
+	int val;
+
+	// Parse!
+	yyparse();
+
+	//printf("HAND\n");
+	//	printf("Id: %d\n", hand.id);
+
+	// Lex!
+	//while(val = yylex()) {
+		//		dprintf("value is %d\n", val);
+	//}
+	return 0;
+}
+
+/*
 int main(int argc, char** argv) {
 	int val;
 	FILE* file;
@@ -180,3 +228,4 @@ int yywrap() {
 
 	return 1; // 0 means more input!
 }
+*/
