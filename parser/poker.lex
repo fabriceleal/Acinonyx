@@ -32,6 +32,9 @@
 numeric [0-9]+
 letters [a-zA-Z]+
 card [AKQJT2-9][hscd]
+flop FLOP
+turn TURN
+river RIVER
 
 %%
 
@@ -45,6 +48,21 @@ card [AKQJT2-9][hscd]
 \n {
 	dprintf("\n");
 	return NEW_LINE;
+}
+
+{flop} {
+	dprintf("flop ");
+	return FLOP;
+}
+
+{turn} {
+	dprintf("turn ");
+	return TURN;
+}
+
+{river} {
+	dprintf("river ");
+	return RIVER;
 }
 
 {card} {
@@ -140,6 +158,8 @@ int main(int argc, char** argv) {
 }
 
 int yywrap() {
+	dprintf("yywrap()\n");
+
 	int err = fclose(yyin);
 	FAIL_IF(0 != err, "Error closing current file\n");
 

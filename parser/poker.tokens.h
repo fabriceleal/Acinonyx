@@ -17,7 +17,10 @@ typedef enum {
 	CLOSE_BRACK,
 	HAND_END,
 	STAR,
-	COMMA
+	COMMA,
+	FLOP,
+	TURN,
+	RIVER
 } e_tokens;
 
 #endif

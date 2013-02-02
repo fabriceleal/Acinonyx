@@ -9,5 +9,8 @@ poker: lex.yy.c
 lex.yy.c: poker.lex
 	lex $^
 
+y.tab.h y.tab.c: poker.yacc
+	yacc -d $^
+
 clean:
-	rm -rf poker lex.yy.c
+	rm -rf poker lex.yy.c y.tab.h y.tab.c
