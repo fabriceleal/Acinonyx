@@ -2,8 +2,11 @@
 
 #include "poker.tokens.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 #define __DEBUG_INFO
+
+// debug print
 #ifdef __DEBUG_INFO
 
 #  define dprintf(s, args...)	fprintf(stderr, (s), ##args)
@@ -13,6 +16,16 @@
 #  define dprintf(s, ...)
 
 #endif
+
+// Check condition, fail if true
+// print messages
+#define FAIL_IF(cond, msg, args...)											\
+	if(cond) {																						\
+		fprintf(stderr, "Condition (%s) failed!\n", #cond); \
+		fprintf(stderr, msg, ##args);												\
+		exit(-1);																						\
+	}
+
 
 %}
 
@@ -108,8 +121,27 @@ card [AKQJT2-9][hscd]
 
 int main(int argc, char** argv) {
 	int val;
+	FILE* file;
+
+	// Check number of arguments
+	FAIL_IF(2 != argc, "Invalid number of arguments (%d)\n", argc);
+
+	// Open file
+	file = fopen(argv[1], "r");
+	FAIL_IF(NULL == file, "Error opening file %s\n", argv[1]);
+	
+	yyin = file;
+
 	while(val = yylex()) {
 		//		dprintf("value is %d\n", val);
 	}
+
 	return 0;
+}
+
+int yywrap() {
+	int err = fclose(yyin);
+	FAIL_IF(0 != err, "Error closing current file\n");
+
+	return 1; // 0 means more input!
 }
