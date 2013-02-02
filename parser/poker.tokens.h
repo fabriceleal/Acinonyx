@@ -1,0 +1,18 @@
+
+typedef enum {
+	WHITESPACE = 255,
+	NEW_LINE,
+	WORD,
+	VALUE,
+	ID,
+	NUMBER,
+	OPEN_PARE,
+	CLOSE_PARE,
+	BAR,
+	DASH,
+	COLON,
+	CLOSE_BRACK,
+	HAND_END,
+	STAR,
+	COMMA
+} e_tokens;

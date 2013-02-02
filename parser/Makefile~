@@ -1,0 +1,13 @@
+
+.PHONY: clean
+
+all: poker
+
+poker: lex.yy.c
+	cc $^ -o $@ -ll
+
+lex.yy.c: poker.lex
+	lex $^
+
+clean:
+	rm poker lex.yy.c
