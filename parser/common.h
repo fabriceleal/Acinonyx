@@ -24,15 +24,11 @@
 		exit(-1);																						\
 	}
 
+
 typedef struct {
 	char rank;
 	char suit;
 } Card;
-
-/*typedef struct {
-	int size;
-	Card* ptr;
-} CardBuf;*/
 
 typedef struct {
 	float small;
@@ -55,25 +51,24 @@ typedef struct {
 	Player** ptr;
 } PlayerBuf;
 
+typedef enum {
+	a_fold,
+	a_call,
+	a_check,
+	a_raise,
+	a_bet,
+	a_post
+} ActionType;
 
 typedef struct {
-	
+	Player* player;
+	ActionType type;
 } Action;
 
 typedef struct {
 	char size;
-	Action* ptr;
+	Action** ptr;
 } ActionBuf;
-
-/*typedef struct {
-	ActionBuf actions;
-	CardBuf cards; 
-	} Round;*/
-
-/*typedef struct {
-	int size;
-	Round* ptr;
-	} RoundBuf;*/
 
 typedef struct {
 	ActionBuf actions;
@@ -97,16 +92,17 @@ typedef struct {
 typedef struct {
 	int id;
 	Blind blinds;
-	Preflop r_0;
-	Flop r_1;
-	Turn r_2;
-	River r_3;
+	Preflop *r_0;
+	Flop *r_1;
+	Turn *r_2;
+	River *r_3;
 	PlayerBuf players;
 } Hand;
 
 Hand *hand;
 
 void print_hand(const Hand* h);
+void print_action(const Action* a);
 void print_player(const Player* p);
 void print_card(const Card* c);
 void print_pocket_hand(const Card* c1, const Card* c2);
@@ -136,6 +132,7 @@ typedef struct _list_itemCard {
 void append_itemCard(list_itemCard* new_head, const list_itemCard* tail);
 list_itemCard* new_itemCard(const char c[2]);
 
+
 typedef struct _list_itemPlayer {
 	Player* value;
 	struct _list_itemPlayer *next;
@@ -143,8 +140,32 @@ typedef struct _list_itemPlayer {
 void append_itemPlayer(list_itemPlayer* new_head, const list_itemPlayer* tail);
 list_itemPlayer* new_itemPlayer(const Player* player);
 
+
+typedef struct _list_itemAction {
+	Action* value;
+	struct _list_itemAction *next;
+} list_itemAction;
+void append_itemAction(list_itemAction* new_head, const list_itemAction* tail);
+list_itemAction* new_itemAction(const Action* action);
+
+
+typedef struct {
+	list_itemCard* cards;
+	list_itemAction* actions;
+} RawRound;
+
+typedef struct _list_itemRawRound {
+	RawRound* value;
+	struct _list_itemRawRound *next;
+} list_itemRawRound;
+void append_itemRawRound(list_itemRawRound* new_head, const list_itemRawRound* tail);
+list_itemRawRound* new_itemRawRound(const RawRound* rawRound);
+
+
 void print_bytes(const void *ptr, const int len);
 
 void copy_itemPlayer_to_PlayerBuf(PlayerBuf* dest, const list_itemPlayer* list);
+void copy_itemAction_to_ActionBuf(ActionBuf* dest, const list_itemAction* list);
+void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list);
 
 #endif

@@ -28,12 +28,12 @@
 	} r_value;
 
 	enum {
-		post,
+		fold,
 		call,
 		check,
-		bet,
 		raise,
-		fold
+		bet,
+		post	
 	} a_value;
 
 	void *ptr;
@@ -69,6 +69,9 @@
 %type <b_value> decl_blinds
 %type <h_value> hand;
 %type <ptr> decl_player_star;
+%type <ptr> action;
+%type <ptr> action_star;
+%type <ptr> round_star;
 
 %%
 
@@ -94,6 +97,10 @@ hand_end {
 
 	copy_itemPlayer_to_PlayerBuf(&hand->players, ($6));
 	
+	hand->r_0 = malloc(sizeof(Preflop));
+	copy_itemAction_to_ActionBuf(&hand->r_0->actions, ($8));
+
+	copy_itemRawRound_to_Hand(hand, ($10));
 }
            ;
 
@@ -175,52 +182,88 @@ decl_player_star: decl_player decl_player_star {
                 ;
 
 round: board action_star NEW_LINE {
-	$$ = $1;
+	RawRound* r = malloc(sizeof(RawRound));
+	r->cards = $1;
+	r->actions = $2;
+
+	$$ = (void*) r;
 }
      ;
 
-round_star: round round_star
-          | round
+round_star: round round_star {
+	list_itemRawRound* r = new_itemRawRound($1);
+	append_itemRawRound(r, $2);
+	$$ = (void*) r;
+}
+| round {
+	list_itemRawRound* r = new_itemRawRound($1);
+	$$ = (void*) r;
+}
           ;
 
 board: PHASE COLON card_star NEW_LINE {
-	
 	$$ = $3;
 }
      ;
 
 card_star: CARD card_star {
 //--
+  //printf("CARD: %c%c\n", $1[0], $1[1]);
 	list_itemCard* r = new_itemCard($1);
+	//print_card(&r->value);
 	append_itemCard(r, (list_itemCard*) $2);
   $$ = (void*) r;
 }
          | CARD {
 //--
+	//printf("CARD: %c%c\n", $1[0], $1[1]);
 	list_itemCard* r = new_itemCard($1);
+	//print_card(&r->value);
   $$ = (void*) r;
 }
          ;
 
 action: WORD ACTION WORD WORD VALUE NEW_LINE {
 //--
+	Action* action = malloc(sizeof(Action));
 	free($1); free($3); free($4); 
-	
+
+	action->player = NULL;	
+	action->type = (ActionType)($2);
+
+	$$ = (void*) action;
 }
       | WORD ACTION VALUE NEW_LINE {
-// --
+// --	
+	Action* action = malloc(sizeof(Action));
 	free($1);
-	
+
+	action->player = NULL;	
+	action->type = $2;
+
+	$$ = (void*) action;	
 }
       | WORD ACTION NEW_LINE {
-//--
+//--	
+	Action* action = malloc(sizeof(Action));
 	free($1);
-	
+
+	action->player = NULL;
+	action->type = $2;
+
+	$$ = (void*) action;	
 }
       ;
 
-action_star: action action_star
-           | action
+action_star: action action_star {
+	list_itemAction* r = new_itemAction($1);
+	append_itemAction(r, $2);
+	$$ = (void*) r;
+}
+| action {
+	list_itemAction* r = new_itemAction($1);
+	$$ = (void*) r;
+}
            ;
 
 summary: WORD WIN VALUE WORD NEW_LINE {
