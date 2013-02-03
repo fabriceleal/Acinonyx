@@ -230,7 +230,7 @@ void yyerror(char *s) {
 }
 
 int yywrap() {
-	dprintf("yywrap()\n");
+	//dprintf("yywrap()\n");
 
 	int err = fclose(yyin);
 	FAIL_IF(0 != err, "Error closing current file\n");

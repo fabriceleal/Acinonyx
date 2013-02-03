@@ -260,7 +260,7 @@ round_plus: round round_plus {
 	append_itemRawRound(r, $2);
 	$$ = (void*) r;
 }
-     | round {
+          | round {
 	list_itemRawRound* r = new_itemRawRound($1);
 	$$ = (void*) r;
 }
