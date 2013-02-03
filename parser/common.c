@@ -174,9 +174,9 @@ void copy_itemAction_to_ActionBuf(ActionBuf* dest, const list_itemAction* list) 
 void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 	list_itemRawRound* curr_round = (list_itemRawRound*) list;
 	list_itemCard* curr_cards = NULL;
+	void* tmp;
 	int i = 0;
 	
-	//for(; curr != NULL; curr = curr->next, ++i);
 	
 	// FLOP
 	if(NULL == curr_round) {
@@ -185,12 +185,17 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 	dest->r_1 = malloc(sizeof(Flop));
 	copy_itemAction_to_ActionBuf(&dest->r_1->actions, curr_round->value->actions);
 	// Read all cards of the board
+	// free as we walk
 	for(i = 0, curr_cards = curr_round->value->cards; 
 			NULL != curr_cards; 
-			++i, curr_cards = curr_cards->next) {
+			++i) {
 		//--
 		dest->r_1->cards[i] = curr_cards->value;
+		tmp = curr_cards;
+		curr_cards = curr_cards->next;
+		free(tmp);
 	}
+
 
 	// TURN
 	curr_round = curr_round->next;
@@ -200,11 +205,18 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 	dest->r_2 = malloc(sizeof(Turn));
 	copy_itemAction_to_ActionBuf(&dest->r_2->actions, curr_round->value->actions);
 	// Find last card
+	// free as we walk
 	curr_cards = curr_round->value->cards;
 	while(curr_cards->next != NULL) {
+		tmp = curr_cards;
 		curr_cards = curr_cards->next; 
+		free(tmp);
 	}
+	// card of the river is the last card of the round
 	dest->r_2->card = curr_cards->value;
+	// free last card
+	free(curr_cards);
+
 
 	// RIVER
 	curr_round = curr_round->next;
@@ -214,10 +226,15 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 	dest->r_3 = malloc(sizeof(River));
 	copy_itemAction_to_ActionBuf(&dest->r_3->actions, curr_round->value->actions);
 	// Find last card
+	// free as we walk
 	curr_cards = curr_round->value->cards;
 	while(curr_cards->next != NULL) {
+		tmp = curr_cards;
 		curr_cards = curr_cards->next; 
+		free(tmp);
 	}
+	// card of the river is the last card of the round
 	dest->r_3->card = curr_cards->value;
-
+	// free last card
+	free(curr_cards);
 }

@@ -59,7 +59,7 @@
 %token <a_value> ACTION
 %token WIN
 
-%type <ptr> card_star
+%type <ptr> card_plus
 %type <ptr> board
 %type <ptr> round
 %type <i_value> decl_date
@@ -68,23 +68,29 @@
 %type <i_value> decl_hand
 %type <b_value> decl_blinds
 %type <h_value> hand;
-%type <ptr> decl_player_star;
+%type <ptr> decl_player_plus;
 %type <ptr> action;
-%type <ptr> action_star;
-%type <ptr> round_star;
+%type <ptr> action_plus;
+%type <ptr> round_plus;
+
 
 %%
+
+
+hand_plus: hand hand_plus
+         | hand
+         ;
 
 hand:      decl_hand
            decl_blinds
            decl_table
            decl_date
            NEW_LINE
-           decl_player_star
+           decl_player_plus
            NEW_LINE
-           action_star
+           action_plus
            NEW_LINE
-           round_star
+           round_plus
            summary
            NEW_LINE
 hand_end { 
@@ -170,7 +176,7 @@ player_type: CLOSE_BRACK // hero, but we dont care
            | CLOSE_PARE
            ;
 
-decl_player_star: decl_player decl_player_star {
+decl_player_plus: decl_player decl_player_plus {
 	list_itemPlayer* r = new_itemPlayer($1);
 	append_itemPlayer(r, $2);
 	$$ = (void*) r;
@@ -181,7 +187,7 @@ decl_player_star: decl_player decl_player_star {
 }
                 ;
 
-round: board action_star NEW_LINE {
+round: board action_plus NEW_LINE {
 	RawRound* r = malloc(sizeof(RawRound));
 	r->cards = $1;
 	r->actions = $2;
@@ -190,7 +196,7 @@ round: board action_star NEW_LINE {
 }
      ;
 
-round_star: round round_star {
+round_plus: round round_plus {
 	list_itemRawRound* r = new_itemRawRound($1);
 	append_itemRawRound(r, $2);
 	$$ = (void*) r;
@@ -201,12 +207,12 @@ round_star: round round_star {
 }
           ;
 
-board: PHASE COLON card_star NEW_LINE {
+board: PHASE COLON card_plus NEW_LINE {
 	$$ = $3;
 }
      ;
 
-card_star: CARD card_star {
+card_plus: CARD card_plus {
 //--
   //printf("CARD: %c%c\n", $1[0], $1[1]);
 	list_itemCard* r = new_itemCard($1);
@@ -255,7 +261,7 @@ action: WORD ACTION WORD WORD VALUE NEW_LINE {
 }
       ;
 
-action_star: action action_star {
+action_plus: action action_plus {
 	list_itemAction* r = new_itemAction($1);
 	append_itemAction(r, $2);
 	$$ = (void*) r;
