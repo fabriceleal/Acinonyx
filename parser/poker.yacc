@@ -1,6 +1,7 @@
 %{
 
 #include <stdio.h>
+#include <string.h>
 #include "common.h"
 
 %}
@@ -26,6 +27,15 @@
 		river
 	} r_value;
 
+	enum {
+		post,
+		call,
+		check,
+		bet,
+		raise,
+		fold
+	} a_value;
+
 	void *ptr;
 }
 
@@ -46,16 +56,19 @@
 %token STAR
 %token COMMA
 %token <r_value> PHASE
-
+%token <a_value> ACTION
+%token WIN
 
 %type <ptr> card_star
 %type <ptr> board
 %type <ptr> round
 %type <i_value> decl_date
 %type <i_value> decl_table
+%type <ptr> decl_player
 %type <i_value> decl_hand
 %type <b_value> decl_blinds
 %type <h_value> hand;
+%type <ptr> decl_player_star;
 
 %%
 
@@ -69,12 +82,40 @@ hand:      decl_hand
            action_star
            NEW_LINE
            round_star
+           summary
+           NEW_LINE
 hand_end { 
 	hand = malloc(sizeof(Hand));
-	hand->id = $1;
-	hand->blind.small = $2.f_small;
-	hand->blind.big = $2.f_big;
+	bzero(hand, sizeof(Hand));
 
+	hand->id = $1;
+	hand->blinds.small = $2.f_small;
+	hand->blinds.big = $2.f_big;
+
+	// ** Players **
+	// Count
+	list_itemPlayer* players = (list_itemPlayer*)($6);
+	list_itemPlayer* curr = players, *tmp;
+	int len = 0, i = 0;
+	for(; curr != NULL; curr = curr->next, ++len); /* {
+		print_player(curr->value);
+	}*/
+
+	dprintf("# players: %d\n", len);	
+
+	// Setup players
+	hand->players.size = (char) len;
+	hand->players.ptr = malloc(sizeof(Player) * len);
+	bzero(hand->players.ptr, sizeof(Player) * len);
+
+	for(i=0, curr = players; i < len; ++i) {
+		hand->players.ptr[i] = curr->value;
+		// free current node
+		tmp = curr->next;
+		free(curr);
+		curr = tmp;
+	}
+	
 }
            ;
 
@@ -82,7 +123,7 @@ decl_hand: WORD WORD WORD ID NEW_LINE {
 	// free unused words!
 	free($1); free($2); free($3);
 
-	dprintf("Hand\n"); $$ = $4; 
+	dprintf(".. Hand\n"); $$ = $4; 
 }
            ;
 
@@ -110,19 +151,51 @@ decl_date: WORD NUMBER COMMA NUMBER DASH NUMBER COLON NUMBER COLON NUMBER OPEN_P
            ;
 
 decl_player: NUMBER player_type WORD STAR VALUE CARD CARD NEW_LINE {
-	free($3);
+	// Do not free $3 here!
+	Player* player = malloc(sizeof(Player));
+
+	player->name = $3;
+	player->stack = $5;
+	player->card_0.rank = (char) ($6[0]);
+	player->card_0.suit = (char) ($6[1]);
+	player->card_1.rank = (char) ($7[0]);
+	player->card_1.suit = (char) ($7[1]);
+	player->button = (char)1;
+
+	$$ = (void*) player;
 }
            | NUMBER player_type WORD      VALUE CARD CARD NEW_LINE {
-	free($3);
+	// Do not free $3 here!
+	Player* player = malloc(sizeof(Player));
+
+	player->name = $3;
+	player->stack = $4;
+	player->card_0.rank = (char) ($5[0]);
+	player->card_0.suit = (char) ($5[1]);
+	player->card_1.rank = (char) ($6[0]);
+	player->card_1.suit = (char) ($6[1]);
+	player->button = (char)0;
+
+	$$ = (void*) player;
 }
            ;
 
-player_type: CLOSE_BRACK
+player_type: CLOSE_BRACK // hero, but we dont care
            | CLOSE_PARE
            ;
 
-decl_player_star: decl_player decl_player_star
-                | decl_player
+decl_player_star: decl_player decl_player_star {
+	list_itemPlayer* r = new_itemPlayer($1);
+
+	append_itemPlayer(r, $2);
+
+	$$ = (void*) r;
+}
+| decl_player {
+	list_itemPlayer* r = new_itemPlayer($1);
+
+	$$ = (void*) r;
+}
                 ;
 
 round: board action_star NEW_LINE {
@@ -142,36 +215,30 @@ board: PHASE COLON card_star NEW_LINE {
 
 card_star: CARD card_star {
 //--
-	//Card c;
-	//c.rank = $1[0];
-	//c.suit = $1[1];
-	list_item_Card* r = new_itemCard($1);
-	append_itemCard(r, (list_item_Card*) $2);
+	list_itemCard* r = new_itemCard($1);
+	append_itemCard(r, (list_itemCard*) $2);
   $$ = (void*) r;
 }
          | CARD {
 //--
-	//Card c;
-	//c.rank = $1[0];
-	//c.suit = $1[1];
-	list_item_Card* r = new_itemCard($1);
+	list_itemCard* r = new_itemCard($1);
   $$ = (void*) r;
 }
          ;
 
-action: WORD WORD WORD WORD VALUE NEW_LINE {
+action: WORD ACTION WORD WORD VALUE NEW_LINE {
 //--
-	free($1); free($2); free($3); free($4); 
+	free($1); free($3); free($4); 
 	
 }
-      | WORD WORD VALUE NEW_LINE {
+      | WORD ACTION VALUE NEW_LINE {
 // --
-	free($1); free($2);
+	free($1);
 	
 }
-      | WORD WORD NEW_LINE {
+      | WORD ACTION NEW_LINE {
 //--
-	free($1); free($2);
+	free($1);
 	
 }
       ;
@@ -180,6 +247,13 @@ action_star: action action_star
            | action
            ;
 
-hand_end: HAND_END NEW_LINE { dprintf("Hand end\n"); }
+summary: WORD WIN VALUE WORD NEW_LINE {
+	free($1); free($4);
+}
+       ;
+
+hand_end: HAND_END NEW_LINE { 
+	dprintf(".. Hand end\n"); 
+}
 
 %%

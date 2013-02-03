@@ -22,6 +22,13 @@ card [AKQJT2-9][hscd]
 flop FLOP
 turn TURN
 river RIVER
+bet bets
+raise raises
+call calls
+check checks
+fold folds
+post posts
+win wins
 
 %%
 
@@ -38,6 +45,34 @@ river RIVER
 	++lineno;
 
 	return NEW_LINE;
+}
+
+{win} {
+
+	dprintf("win(%s) ", yytext);
+
+	return WIN;
+}
+
+{post}|{raise}|{bet}|{call}|{check}|{fold} {
+	if(!strcmp(yytext, "posts")) {
+		yylval.a_value = post;
+	} else if(!strcmp(yytext, "raises")) {
+		yylval.a_value = raise;		
+	} else if(!strcmp(yytext, "bets")) {
+		yylval.a_value = bet;
+	} else if(!strcmp(yytext, "calls")) {
+		yylval.a_value = call;
+	} else if(!strcmp(yytext, "checks")) {
+		yylval.a_value = check;
+	} else if(!strcmp(yytext, "folds")) {
+		yylval.a_value = fold;
+	}
+
+	dprintf("action(%s) ", yytext);
+	
+	return ACTION;
+
 }
 
 {flop}|{turn}|{river} {
@@ -183,49 +218,6 @@ void yyerror(char *s) {
 	fprintf(stderr, "%d: %s at '%s'\n", lineno, s, yytext);
 }
 
-void print_hand(Hand *h) {
-	printf("HAND\n");
-	printf("Id: %d\n", h->id);
-	printf("Small: %.2f\n", h->blind.small);
-	printf("Big: %.2f\n", h->blind.big);	
-}
-
-int main(int argc, char** argv) {
-	int val;
-
-	// Parse!
-	yyparse();
-
-	print_hand(hand);
-	
-	// Lex!
-	//while(val = yylex()) {
-		//		dprintf("value is %d\n", val);
-	//}
-	return 0;
-}
-
-/*
-int main(int argc, char** argv) {
-	int val;
-	FILE* file;
-
-	// Check number of arguments
-	FAIL_IF(2 != argc, "Invalid number of arguments (%d)\n", argc);
-
-	// Open file
-	file = fopen(argv[1], "r");
-	FAIL_IF(NULL == file, "Error opening file %s\n", argv[1]);
-	
-	yyin = file;
-
-	while(val = yylex()) {
-		//		dprintf("value is %d\n", val);
-	}
-
-	return 0;
-}
-
 int yywrap() {
 	dprintf("yywrap()\n");
 
@@ -234,4 +226,33 @@ int yywrap() {
 
 	return 1; // 0 means more input!
 }
-*/
+
+int main(int argc, char** argv) {
+	int val;
+	FILE* file;
+
+	// Check number of arguments
+	//FAIL_IF(2 != argc, "Invalid number of arguments (%d)\n", argc);
+
+	// Open file
+	file = fopen("../tests/1.txt" /*argv[1]*/, "r");
+	//FAIL_IF(NULL == file, "Error opening file %s\n", argv[1]);
+	
+	yyin = file;
+
+	hand = NULL;
+
+	// Lex!
+	//while(val = yylex()) {
+	//		dprintf("value is %d\n", val);
+	//}
+
+	// Parse!
+	yyparse();
+
+	if(hand != NULL) {
+		print_hand(hand);
+	}
+
+	return 0;
+}
