@@ -67,3 +67,26 @@ void print_bytes(const void *ptr, const int len) {
 			printf("\n");
 	}
 }
+
+void copy_itemPlayer_to_PlayerBuf(PlayerBuf* dest, const list_itemPlayer* list) {
+	list_itemPlayer* players = (list_itemPlayer*)list;
+	list_itemPlayer* curr = players, *tmp;
+	int len = 0, i = 0;
+
+	for(; curr != NULL; curr = curr->next, ++len); 
+
+	dprintf("# players: %d\n", len);	
+
+	// Setup players
+	dest->size = (char) len;
+	dest->ptr = malloc(sizeof(Player) * len);
+
+	for(i=0, curr = players; i < len; ++i) {
+		dest->ptr[i] = curr->value;
+		// free current node
+		tmp = curr->next;
+		free(curr);
+		curr = tmp;
+	}
+
+}

@@ -92,29 +92,7 @@ hand_end {
 	hand->blinds.small = $2.f_small;
 	hand->blinds.big = $2.f_big;
 
-	// ** Players **
-	// Count
-	list_itemPlayer* players = (list_itemPlayer*)($6);
-	list_itemPlayer* curr = players, *tmp;
-	int len = 0, i = 0;
-	for(; curr != NULL; curr = curr->next, ++len); /* {
-		print_player(curr->value);
-	}*/
-
-	dprintf("# players: %d\n", len);	
-
-	// Setup players
-	hand->players.size = (char) len;
-	hand->players.ptr = malloc(sizeof(Player) * len);
-	bzero(hand->players.ptr, sizeof(Player) * len);
-
-	for(i=0, curr = players; i < len; ++i) {
-		hand->players.ptr[i] = curr->value;
-		// free current node
-		tmp = curr->next;
-		free(curr);
-		curr = tmp;
-	}
+	copy_itemPlayer_to_PlayerBuf(&hand->players, ($6));
 	
 }
            ;
@@ -123,7 +101,8 @@ decl_hand: WORD WORD WORD ID NEW_LINE {
 	// free unused words!
 	free($1); free($2); free($3);
 
-	dprintf(".. Hand\n"); $$ = $4; 
+	//dprintf(".. Hand\n"); 
+	$$ = $4; 
 }
            ;
 
@@ -156,10 +135,10 @@ decl_player: NUMBER player_type WORD STAR VALUE CARD CARD NEW_LINE {
 
 	player->name = $3;
 	player->stack = $5;
-	player->card_0.rank = (char) ($6[0]);
-	player->card_0.suit = (char) ($6[1]);
-	player->card_1.rank = (char) ($7[0]);
-	player->card_1.suit = (char) ($7[1]);
+	player->card_0.rank = $6[0];
+	player->card_0.suit = $6[1];
+	player->card_1.rank = $7[0];
+	player->card_1.suit = $7[1];
 	player->button = (char)1;
 
 	$$ = (void*) player;
@@ -170,10 +149,10 @@ decl_player: NUMBER player_type WORD STAR VALUE CARD CARD NEW_LINE {
 
 	player->name = $3;
 	player->stack = $4;
-	player->card_0.rank = (char) ($5[0]);
-	player->card_0.suit = (char) ($5[1]);
-	player->card_1.rank = (char) ($6[0]);
-	player->card_1.suit = (char) ($6[1]);
+	player->card_0.rank = $5[0];
+	player->card_0.suit = $5[1];
+	player->card_1.rank = $6[0];
+	player->card_1.suit = $6[1];
 	player->button = (char)0;
 
 	$$ = (void*) player;
@@ -186,14 +165,11 @@ player_type: CLOSE_BRACK // hero, but we dont care
 
 decl_player_star: decl_player decl_player_star {
 	list_itemPlayer* r = new_itemPlayer($1);
-
 	append_itemPlayer(r, $2);
-
 	$$ = (void*) r;
 }
 | decl_player {
 	list_itemPlayer* r = new_itemPlayer($1);
-
 	$$ = (void*) r;
 }
                 ;

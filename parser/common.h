@@ -145,4 +145,6 @@ list_itemPlayer* new_itemPlayer(const Player* player);
 
 void print_bytes(const void *ptr, const int len);
 
+void copy_itemPlayer_to_PlayerBuf(PlayerBuf* dest, const list_itemPlayer* list);
+
 #endif
