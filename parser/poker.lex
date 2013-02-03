@@ -1,6 +1,5 @@
 %{
 
-	//#include "poker.tokens.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "y.tab.h"
@@ -29,15 +28,16 @@ check checks
 fold folds
 post posts
 win wins
+show shows
+muck mucks
+sitout "(sitting out)"
+allin "(all-in)"
 
 %%
 
 \r     /* ignore carriage return */ ;
 
-[\t ]+ ; /* {
-	dprintf("whitespace ");
-	return WHITESPACE;
-	}*/
+[\t ]+ /* ignore whitespace */;
 
 \n {
 	dprintf(".\n");
@@ -47,6 +47,19 @@ win wins
 	return NEW_LINE;
 }
 
+{allin} {
+	dprintf("allin ", yytext);
+
+	return ALLIN;
+}
+
+{sitout} {
+
+	dprintf("sitout ", yytext);
+
+	return SITOUT;
+}
+
 {win} {
 
 	dprintf("win(%s) ", yytext);
@@ -54,7 +67,7 @@ win wins
 	return WIN;
 }
 
-{post}|{raise}|{bet}|{call}|{check}|{fold} {
+{post}|{raise}|{bet}|{call}|{check}|{fold}|{show}|{muck} {
 	if(!strcmp(yytext, "posts")) {
 		yylval.a_value = post;
 	} else if(!strcmp(yytext, "raises")) {
@@ -67,8 +80,10 @@ win wins
 		yylval.a_value = check;
 	} else if(!strcmp(yytext, "folds")) {
 		yylval.a_value = fold;
+	} else {
+		yylval.a_value = IGNORE;
 	}
-
+	
 	dprintf("action(%s) ", yytext);
 	
 	return ACTION;
@@ -206,11 +221,7 @@ win wins
 	return STAR;
 }
 
-\, {
-	dprintf("comma ");
-
-	return COMMA;
-}
+\, /* ignore whitespace */;
 
 %%
 
@@ -232,11 +243,12 @@ int main(int argc, char** argv) {
 	FILE* file;
 
 	// Check number of arguments
-	//FAIL_IF(2 != argc, "Invalid number of arguments (%d)\n", argc);
+	FAIL_IF(2 != argc, "Invalid number of arguments (%d)\n", argc);
 
 	// Open file
-	file = fopen("../tests/1.txt" /*argv[1]*/, "r");
-	//FAIL_IF(NULL == file, "Error opening file %s\n", argv[1]);
+	//file = fopen("../tests/000.txt" /*argv[1]*/, "r");
+	file = fopen(argv[1], "r");
+	FAIL_IF(NULL == file, "Error opening file %s\n", argv[1]);
 	
 	yyin = file;
 
@@ -246,12 +258,12 @@ int main(int argc, char** argv) {
 	//while(val = yylex()) {
 	//		dprintf("value is %d\n", val);
 	//}
-
+	
 	// Parse!
 	yyparse();
 
 	if(hand != NULL) {
-		print_hand(hand);
+		//print_hand(hand);
 	}
 
 	return 0;

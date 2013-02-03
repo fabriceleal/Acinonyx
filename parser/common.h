@@ -168,4 +168,6 @@ void copy_itemPlayer_to_PlayerBuf(PlayerBuf* dest, const list_itemPlayer* list);
 void copy_itemAction_to_ActionBuf(ActionBuf* dest, const list_itemAction* list);
 void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list);
 
+void free_hand(Hand* hand);
+
 #endif

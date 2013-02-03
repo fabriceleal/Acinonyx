@@ -33,7 +33,9 @@
 		check,
 		raise,
 		bet,
-		post	
+		post,
+		
+		IGNORE
 	} a_value;
 
 	void *ptr;
@@ -54,10 +56,11 @@
 %token <c_value> CLOSE_BRACK
 %token HAND_END
 %token STAR
-%token COMMA
 %token <r_value> PHASE
 %token <a_value> ACTION
 %token WIN
+%token SITOUT
+%token ALLIN
 
 %type <ptr> card_plus
 %type <ptr> board
@@ -91,7 +94,7 @@ hand:      decl_hand
            action_plus
            NEW_LINE
            round_plus
-           summary
+           summary_plus
            NEW_LINE
 hand_end { 
 	hand = malloc(sizeof(Hand));
@@ -107,7 +110,39 @@ hand_end {
 	copy_itemAction_to_ActionBuf(&hand->r_0->actions, ($8));
 
 	copy_itemRawRound_to_Hand(hand, ($10));
+
+	free_hand(hand);
+} | decl_hand
+           decl_blinds
+           decl_table
+           decl_date
+           NEW_LINE
+           decl_player_plus
+           NEW_LINE
+           action_plus
+           NEW_LINE
+           summary_plus
+           NEW_LINE
+hand_end { 
+	hand = malloc(sizeof(Hand));
+	bzero(hand, sizeof(Hand));
+
+	hand->id = $1;
+	hand->blinds.small = $2.f_small;
+	hand->blinds.big = $2.f_big;
+
+	copy_itemPlayer_to_PlayerBuf(&hand->players, ($6));
+	
+	hand->r_0 = malloc(sizeof(Preflop));
+	copy_itemAction_to_ActionBuf(&hand->r_0->actions, ($8));
+
+	// do something with hand
+	// ...
+
+	// free hand
+	free_hand(hand);
 }
+
            ;
 
 decl_hand: WORD WORD WORD ID NEW_LINE {
@@ -135,8 +170,8 @@ decl_table: WORD WORD WORD NUMBER DASH WORD NEW_LINE {
 }
            ;
 
-decl_date: WORD NUMBER COMMA NUMBER DASH NUMBER COLON NUMBER COLON NUMBER OPEN_PARE WORD CLOSE_PARE NEW_LINE {
-	free($1); free($12);
+decl_date: WORD NUMBER NUMBER DASH NUMBER COLON NUMBER COLON NUMBER OPEN_PARE WORD CLOSE_PARE NEW_LINE {
+	free($1); free($11);
 
 	$$ = 0;
 }
@@ -170,6 +205,12 @@ decl_player: NUMBER player_type WORD STAR VALUE CARD CARD NEW_LINE {
 
 	$$ = (void*) player;
 }
+           | NUMBER player_type WORD SITOUT NEW_LINE {
+	//
+	free($3);
+	
+	$$ = NULL;
+}
            ;
 
 player_type: CLOSE_BRACK // hero, but we dont care
@@ -177,13 +218,23 @@ player_type: CLOSE_BRACK // hero, but we dont care
            ;
 
 decl_player_plus: decl_player decl_player_plus {
-	list_itemPlayer* r = new_itemPlayer($1);
-	append_itemPlayer(r, $2);
-	$$ = (void*) r;
+	if(NULL == $1) {
+		$$ = $2;
+	} else {
+		list_itemPlayer* r = new_itemPlayer($1);
+		if(NULL != $2) {
+			append_itemPlayer(r, $2);
+		}
+		$$ = (void*) r;
+	}
 }
-| decl_player {
-	list_itemPlayer* r = new_itemPlayer($1);
-	$$ = (void*) r;
+                | decl_player {
+	if($1 == NULL) {
+		$$ = NULL;
+	} else {
+		list_itemPlayer* r = new_itemPlayer($1);
+		$$ = (void*) r;
+	}
 }
                 ;
 
@@ -194,6 +245,14 @@ round: board action_plus NEW_LINE {
 
 	$$ = (void*) r;
 }
+     | board NEW_LINE {
+  //--
+	RawRound* r = malloc(sizeof(RawRound));
+	r->cards = $1;
+	r->actions = NULL;
+
+	$$ = (void*) r;
+}
      ;
 
 round_plus: round round_plus {
@@ -201,7 +260,7 @@ round_plus: round round_plus {
 	append_itemRawRound(r, $2);
 	$$ = (void*) r;
 }
-| round {
+     | round {
 	list_itemRawRound* r = new_itemRawRound($1);
 	$$ = (void*) r;
 }
@@ -229,8 +288,11 @@ card_plus: CARD card_plus {
 }
          ;
 
-action: WORD ACTION WORD WORD VALUE NEW_LINE {
+action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 //--
+  // <player> posts big blind <value> (all-in)
+  // <player> posts small blind <value> (all-in)
+
 	Action* action = malloc(sizeof(Action));
 	free($1); free($3); free($4); 
 
@@ -239,8 +301,24 @@ action: WORD ACTION WORD WORD VALUE NEW_LINE {
 
 	$$ = (void*) action;
 }
-      | WORD ACTION VALUE NEW_LINE {
+      | WORD ACTION WORD WORD VALUE NEW_LINE {
+//--
+  // <player> posts big blind <value>
+  // <player> posts small blind <value>
+
+	Action* action = malloc(sizeof(Action));
+	free($1); free($3); free($4); 
+
+	action->player = NULL;	
+	action->type = (ActionType)($2);
+
+	$$ = (void*) action;
+}
+      | WORD ACTION VALUE ALLIN NEW_LINE {
 // --	
+  // <player> calls <value> (all-in)
+  // <player> raises <value> (all-in)
+
 	Action* action = malloc(sizeof(Action));
 	free($1);
 
@@ -249,36 +327,89 @@ action: WORD ACTION WORD WORD VALUE NEW_LINE {
 
 	$$ = (void*) action;	
 }
-      | WORD ACTION NEW_LINE {
-//--	
+      | WORD ACTION VALUE NEW_LINE {
+// --	
+  // <player> calls <value>
+  // <player> raises <value>
+
 	Action* action = malloc(sizeof(Action));
 	free($1);
 
-	action->player = NULL;
+	action->player = NULL;	
 	action->type = $2;
 
 	$$ = (void*) action;	
 }
+      | WORD ACTION CARD CARD NEW_LINE {
+//--
+	// <player> shows <cards>
+	$$ = NULL;	
+}
+      | WORD ACTION NEW_LINE {
+//--
+  // <player> folds
+  // <player> mucks
+	free($1);
+  if(IGNORE == $2) {
+		$$ = NULL;
+	} else {
+		Action* action = malloc(sizeof(Action));
+		action->player = NULL;
+		action->type = $2;
+
+		$$ = (void*) action;	
+	}
+	
+}
       ;
 
-action_plus: action action_plus {
-	list_itemAction* r = new_itemAction($1);
-	append_itemAction(r, $2);
-	$$ = (void*) r;
+action_plus: action action_plus {	
+	if(NULL == $1) {
+		$$ = $2;
+	} else {
+		list_itemAction* r = new_itemAction($1);	
+		if(NULL != $2) {
+			append_itemAction(r, $2);
+		}
+		$$ = (void*) r;	
+	}
 }
-| action {
-	list_itemAction* r = new_itemAction($1);
-	$$ = (void*) r;
+           | action {
+	if(NULL == $1) {
+		$$ = NULL;
+	} else {
+		list_itemAction* r = new_itemAction($1);
+		$$ = (void*) r;
+	}
 }
            ;
 
-summary: WORD WIN VALUE WORD NEW_LINE {
-	free($1); free($4);
+/* when some player is allin and there are side pots, some 'shows' may happen 
+in the middle of the summary*/
+
+summary: WORD WIN VALUE word_plus NEW_LINE {
+  free($1);
 }
+       |
+       action
        ;
+
+summary_plus: summary summary_plus
+            | summary
+            ;
+
+word_plus: WORD word_plus {
+	free($1);
+}
+         | WORD {
+	//--
+	free($1);
+}
+         ;
 
 hand_end: HAND_END NEW_LINE { 
 	dprintf(".. Hand end\n"); 
 }
+
 
 %%

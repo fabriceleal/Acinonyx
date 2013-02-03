@@ -196,9 +196,11 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 		free(tmp);
 	}
 
-
 	// TURN
+	tmp = curr_round;
 	curr_round = curr_round->next;
+	// freeing flop
+	free(tmp);
 	if(NULL == curr_round) {
 		return;
 	}
@@ -219,7 +221,10 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 
 
 	// RIVER
+	tmp = curr_round;
 	curr_round = curr_round->next;
+	// freeing turn
+	free(tmp);
 	if(NULL == curr_round) {
 		return;
 	}
@@ -237,4 +242,57 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 	dest->r_3->card = curr_cards->value;
 	// free last card
 	free(curr_cards);
+
+	// freeing river
+	free(curr_round); 
+}
+
+void free_hand(Hand* hand) {
+	int i;
+	if(hand->r_0) {
+		if(hand->r_0->actions.ptr) {
+			for(i = 0; i < hand->r_0->actions.size; ++i) {
+				free(hand->r_0->actions.ptr[i]);
+			}
+			free(hand->r_0->actions.ptr);
+		}
+		free(hand->r_0);
+	}
+
+	if(hand->r_1) {
+		if(hand->r_1->actions.ptr) {
+			for(i = 0; i < hand->r_1->actions.size; ++i) {
+				free(hand->r_1->actions.ptr[i]);
+			}
+			free(hand->r_1->actions.ptr);
+		}
+		free(hand->r_1);
+	}
+
+	if(hand->r_2) {
+		if(hand->r_2->actions.ptr) {
+			for(i = 0; i < hand->r_2->actions.size; ++i) {
+				free(hand->r_2->actions.ptr[i]);
+			}
+			free(hand->r_2->actions.ptr);
+		}
+		free(hand->r_2);
+	}
+	if(hand->r_3) {
+		if(hand->r_3->actions.ptr) {
+			for(i = 0; i < hand->r_3->actions.size; ++i) {
+				free(hand->r_3->actions.ptr[i]);
+			}
+			free(hand->r_3->actions.ptr);
+		}
+		free(hand->r_3);
+	}	
+	if(hand->players.size) {
+		for(i = 0; i < hand->players.size; ++i) {
+			free(hand->players.ptr[i]->name);
+			free(hand->players.ptr[i]);
+		}
+		free(hand->players.ptr);
+	}
+	free(hand);
 }
