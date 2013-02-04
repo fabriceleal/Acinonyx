@@ -18,10 +18,10 @@
 // Check condition, fail if true
 // print messages
 #  define FAIL_IF(cond, msg, args...)											\
-	if(cond) {																						\
-		fprintf(stderr, "Condition (%s) failed!\n", #cond); \
-		fprintf(stderr, msg, ##args);												\
-		exit(-1);																						\
+	if(cond) {																							\
+		fprintf(stderr, "Condition (%s) occured!\n", #cond);	\
+		fprintf(stderr, msg, ##args);													\
+		exit(-1);																							\
 	}
 
 
