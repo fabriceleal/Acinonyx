@@ -3,6 +3,12 @@
 #include <stdio.h>
 #include "common.h"
 
+#define _POKER_LEX_NO_DEBUG
+#ifdef _POKER_LEX_NO_DEBUG
+#undef dprintf
+#define dprintf(...)
+#endif
+
 void fillCard(Card *card, const char c[2]) {
 	card->rank = c[0];
 	card->suit = c[1];

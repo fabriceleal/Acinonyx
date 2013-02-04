@@ -3,6 +3,18 @@
 #include <stdio.h>
 #include <string.h>
 #include "common.h"
+#include "mem_dbg.h"
+
+#define _POKER_LEX_NO_DEBUG
+#ifdef _POKER_LEX_NO_DEBUG
+#undef dprintf
+#define dprintf(...)
+#endif
+
+#define _MEM_NO_DEBUG
+#ifndef _MEM_NO_DEBUG
+#define free(x) dfree(x)
+#endif
 
 %}
 
@@ -111,6 +123,10 @@ hand_end {
 
 	copy_itemRawRound_to_Hand(hand, ($10));
 
+	// do something with hand
+	// ...
+
+	// free hand
 	free_hand(hand);
 } | decl_hand
            decl_blinds
@@ -292,9 +308,9 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 //--
   // <player> posts big blind <value> (all-in)
   // <player> posts small blind <value> (all-in)
+	free($1); free($3); free($4); 
 
 	Action* action = malloc(sizeof(Action));
-	free($1); free($3); free($4); 
 
 	action->player = NULL;	
 	action->type = (ActionType)($2);
@@ -305,9 +321,9 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 //--
   // <player> posts big blind <value>
   // <player> posts small blind <value>
+	free($1); free($3); free($4); 
 
 	Action* action = malloc(sizeof(Action));
-	free($1); free($3); free($4); 
 
 	action->player = NULL;	
 	action->type = (ActionType)($2);
@@ -318,9 +334,9 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 // --	
   // <player> calls <value> (all-in)
   // <player> raises <value> (all-in)
+	free($1);
 
 	Action* action = malloc(sizeof(Action));
-	free($1);
 
 	action->player = NULL;	
 	action->type = $2;
@@ -331,9 +347,9 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 // --	
   // <player> calls <value>
   // <player> raises <value>
+	free($1);
 
 	Action* action = malloc(sizeof(Action));
-	free($1);
 
 	action->player = NULL;	
 	action->type = $2;
@@ -343,6 +359,8 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
       | WORD ACTION CARD CARD NEW_LINE {
 //--
 	// <player> shows <cards>
+	free($1);
+
 	$$ = NULL;	
 }
       | WORD ACTION NEW_LINE {

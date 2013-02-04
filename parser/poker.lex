@@ -4,13 +4,22 @@
 #include <stdlib.h>
 #include "y.tab.h"
 #include "common.h"
+#include "mem_dbg.h"
 
 int lineno = 0;
 
 #define _POKER_LEX_NO_DEBUG
 #ifdef _POKER_LEX_NO_DEBUG
-#undef dprintf
-#define dprintf(...)
+#define ldprintf(...)
+#else
+#define ldprintf(args...) dprintf(args)
+#endif
+
+#define _MEM_NO_DEBUG
+#ifdef _MEM_NO_DEBUG
+#define dmprintf(...)
+#else
+#define dmprintf(args...) dprintf(args)
 #endif
 
 %}
@@ -40,7 +49,7 @@ allin "(all-in)"
 [\t ]+ /* ignore whitespace */;
 
 \n {
-	dprintf(".\n");
+	ldprintf(".\n");
 
 	++lineno;
 
@@ -48,21 +57,21 @@ allin "(all-in)"
 }
 
 {allin} {
-	dprintf("allin ", yytext);
+	ldprintf("allin ", yytext);
 
 	return ALLIN;
 }
 
 {sitout} {
 
-	dprintf("sitout ", yytext);
+	ldprintf("sitout ", yytext);
 
 	return SITOUT;
 }
 
 {win} {
 
-	dprintf("win(%s) ", yytext);
+	ldprintf("win(%s) ", yytext);
 
 	return WIN;
 }
@@ -84,7 +93,7 @@ allin "(all-in)"
 		yylval.a_value = IGNORE;
 	}
 	
-	dprintf("action(%s) ", yytext);
+	ldprintf("action(%s) ", yytext);
 	
 	return ACTION;
 
@@ -102,7 +111,7 @@ allin "(all-in)"
 		yylval.r_value = 0;
 	}
 
-	dprintf("phase(%d) ", yylval.r_value);
+	ldprintf("phase(%d) ", yylval.r_value);
 	
 	return PHASE;
 }
@@ -110,22 +119,19 @@ allin "(all-in)"
 {card} {
 	memcpy(yylval.card_value, yytext, sizeof(yylval.card_value));
 
-	dprintf("card(%c%c) ", yylval.card_value[0], yylval.card_value[1]);
+	ldprintf("card(%c%c) ", yylval.card_value[0], yylval.card_value[1]);
 
 	return CARD;
 }
 
 {letters} {
 	// ATTENTION: malloc without free!
-	int len = strlen(yytext);
-	char* long_string = malloc(len + 1);
-
-	bzero(long_string, len + 1);
-	strcpy(long_string, yytext);
+	char* long_string = strdup(yytext);
+	dmprintf(".malloc(%d) = %p (%s)\n", strlen(long_string) + 1, long_string, long_string);
 	
 	yylval.s_value = long_string;
 
-	dprintf("word(%s) ", yylval.s_value);
+	ldprintf("word(%s) ", yylval.s_value);
 
 	return WORD;
 }
@@ -134,7 +140,7 @@ allin "(all-in)"
 	// exclude the initial '$' char
 	yylval.f_value = atof(yytext + 1); 
 
-	dprintf("value(%.2f) ", yylval.f_value);
+	ldprintf("value(%.2f) ", yylval.f_value);
 
 	return VALUE;
 }
@@ -154,7 +160,7 @@ allin "(all-in)"
 
   yylval.i_value = atoi(_id_ptr);
  
-  dprintf("id(%d) ", yylval.i_value);
+  ldprintf("id(%d) ", yylval.i_value);
 
   free(_id_ptr);
 
@@ -164,19 +170,19 @@ allin "(all-in)"
 {numeric} {
 	yylval.f_value = atof(yytext);
 
-  dprintf("number(%.2f) ", yylval.f_value);
+  ldprintf("number(%.2f) ", yylval.f_value);
 
   return NUMBER;
 }
 
 \( {
-	dprintf("open-pare ");
+	ldprintf("open-pare ");
 
 	return OPEN_PARE;
 }
 
 \) {
-	dprintf("clos-pare ");
+	ldprintf("clos-pare ");
 
 	//	yylval.c_value = ')';
 
@@ -184,25 +190,25 @@ allin "(all-in)"
 }
 
 \/ {
-	dprintf("bar ");
+	ldprintf("bar ");
 
 	return BAR;
 }
 
 \- {
-	dprintf("dash ");
+	ldprintf("dash ");
 
 	return DASH;
 }
 
 \: {
-	dprintf("colon ");
+	ldprintf("colon ");
 
 	return COLON;
 }
 
 \} {
-	dprintf("clos-brac ");
+	ldprintf("clos-brac ");
 
 	//	yylval.c_value = '}';
 
@@ -210,13 +216,13 @@ allin "(all-in)"
 }
 
 \*{30} {
-	dprintf("hand-end ");
+	ldprintf("hand-end ");
 
 	return HAND_END;
 }
 
 \* {
-	dprintf("star ");
+	ldprintf("star ");
 
 	return STAR;
 }
@@ -226,7 +232,7 @@ allin "(all-in)"
 %%
 
 void yyerror(char *s) {
-	fprintf(stderr, "%d: %s at '%s'\n", lineno, s, yytext);
+	fprintf(stderr, "Error lexing: %d: %s at '%s'\n", lineno, s, yytext);
 }
 
 int yywrap() {
@@ -261,6 +267,8 @@ int main(int argc, char** argv) {
 	
 	// Parse!
 	yyparse();
+
+	yylex_destroy();
 
 	if(hand != NULL) {
 		//print_hand(hand);
