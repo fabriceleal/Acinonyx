@@ -92,8 +92,8 @@
 %%
 
 
-hand_plus: hand hand_plus
-         | hand
+hand_plus: hand
+         | hand_plus hand
          ;
 
 hand:      decl_hand
@@ -239,22 +239,22 @@ player_type: CLOSE_BRACK // hero, but we dont care
            | CLOSE_PARE
            ;
 
-decl_player_plus: decl_player decl_player_plus {
-	if(NULL == $1) {
-		$$ = $2;
-	} else {
-		list_itemPlayer* r = new_itemPlayer($1);
-		if(NULL != $2) {
-			append_itemPlayer(r, $2);
-		}
-		$$ = (void*) r;
-	}
-}
-                | decl_player {
+decl_player_plus: decl_player {
 	if($1 == NULL) {
 		$$ = NULL;
 	} else {
 		list_itemPlayer* r = new_itemPlayer($1);
+		$$ = (void*) r;
+	}
+}
+                | decl_player_plus decl_player {
+	if(NULL == $2) {
+		$$ = $1;
+	} else {
+		list_itemPlayer* r = new_itemPlayer($2);
+		if(NULL != $1) {
+			append_itemPlayer(r, $1);
+		}
 		$$ = (void*) r;
 	}
 }
@@ -293,19 +293,15 @@ board: PHASE COLON card_plus NEW_LINE {
 }
      ;
 
-card_plus: CARD card_plus {
+card_plus: CARD {
 //--
-  //printf("CARD: %c%c\n", $1[0], $1[1]);
 	list_itemCard* r = new_itemCard($1);
-	//print_card(&r->value);
-	append_itemCard(r, (list_itemCard*) $2);
   $$ = (void*) r;
 }
-         | CARD {
+         | card_plus CARD {
 //--
-	//printf("CARD: %c%c\n", $1[0], $1[1]);
-	list_itemCard* r = new_itemCard($1);
-	//print_card(&r->value);
+	list_itemCard* r = new_itemCard($2);
+	append_itemCard(r, (list_itemCard*) $1);
   $$ = (void*) r;
 }
          ;
@@ -387,23 +383,24 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 }
       ;
 
-action_plus: action action_plus {	
-	if(NULL == $1) {
-		$$ = $2;
-	} else {
-		list_itemAction* r = new_itemAction($1);	
-		if(NULL != $2) {
-			append_itemAction(r, $2);
-		}
-		$$ = (void*) r;	
-	}
-}
-           | action {
+action_plus: action {
 	if(NULL == $1) {
 		$$ = NULL;
 	} else {
 		list_itemAction* r = new_itemAction($1);
 		$$ = (void*) r;
+	}
+}
+           | action_plus action {
+	//--
+	if(NULL == $2) {
+		$$ = $1;
+	} else {
+		list_itemAction* r = new_itemAction($2);
+		if(NULL != $1) {
+			append_itemAction(r, $1);
+		}
+		$$ = (void*) r;	
 	}
 }
            ;
@@ -422,12 +419,12 @@ summary_plus: summary
             | summary_plus summary
             ;
 
-word_plus: WORD word_plus {
+word_plus: WORD {
 	free($1);
 }
-         | WORD {
+         | word_plus WORD {
 	//--
-	free($1);
+	free($2);
 }
          ;
 
