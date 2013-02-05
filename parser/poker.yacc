@@ -124,7 +124,7 @@ hand_end {
 	copy_itemRawRound_to_Hand(hand, ($10));
 
 	// do something with hand
-	// ...
+	print_hand(hand);
 
 	// free hand
 	free_hand(hand);
@@ -153,7 +153,7 @@ hand_end {
 	copy_itemAction_to_ActionBuf(&hand->r_0->actions, ($8));
 
 	// do something with hand
-	// ...
+	print_hand(hand);
 
 	// free hand
 	free_hand(hand);

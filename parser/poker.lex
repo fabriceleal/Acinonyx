@@ -117,11 +117,10 @@ allin "(all-in)"
 }
 
 {card} {
-	//memcpy(yylval.card_value, yytext, sizeof(yylval.card_value));
-	//ldprintf("card(%c%c) ", yylval.card_value[0], yylval.card_value[1]);
+	memcpy(yylval.card_value, yytext, sizeof(yylval.card_value));
+	ldprintf("card(%c%c) ", yylval.card_value[0], yylval.card_value[1]);
 	
 	// TODO Pack into a single char
-	
 	
 	return CARD;
 }
