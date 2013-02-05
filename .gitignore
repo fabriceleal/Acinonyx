@@ -1,4 +1,5 @@
 *~
+*.o
 parser/lex.yy.c
 parser/poker
 parser/y.tab.c

@@ -1,6 +1,6 @@
 #ifndef COMMON_H
 #  define COMMON_H
-
+#  include "intern.h"
 
 #  define __DEBUG_INFO
 
@@ -169,5 +169,7 @@ void copy_itemAction_to_ActionBuf(ActionBuf* dest, const list_itemAction* list);
 void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list);
 
 void free_hand(Hand* hand);
+
+intern_pool* pool;
 
 #endif

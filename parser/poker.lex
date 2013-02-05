@@ -117,10 +117,12 @@ allin "(all-in)"
 }
 
 {card} {
-	memcpy(yylval.card_value, yytext, sizeof(yylval.card_value));
-
-	ldprintf("card(%c%c) ", yylval.card_value[0], yylval.card_value[1]);
-
+	//memcpy(yylval.card_value, yytext, sizeof(yylval.card_value));
+	//ldprintf("card(%c%c) ", yylval.card_value[0], yylval.card_value[1]);
+	
+	// TODO Pack into a single char
+	
+	
 	return CARD;
 }
 
@@ -260,6 +262,8 @@ int main(int argc, char** argv) {
 
 	hand = NULL;
 
+	pool = init_pool();
+
 	// Lex!
 	//while(val = yylex()) {
 	//		dprintf("value is %d\n", val);
@@ -270,9 +274,11 @@ int main(int argc, char** argv) {
 
 	yylex_destroy();
 
-	if(hand != NULL) {
-		//print_hand(hand);
-	}
+	//if(hand != NULL) {
+	//print_hand(hand);
+	//}
+
+	destroy_pool(pool);
 
 	return 0;
 }

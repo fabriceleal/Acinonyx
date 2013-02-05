@@ -193,11 +193,14 @@ decl_date: WORD NUMBER NUMBER DASH NUMBER COLON NUMBER COLON NUMBER OPEN_PARE WO
 }
            ;
 
-decl_player: NUMBER player_type WORD STAR VALUE CARD CARD NEW_LINE {
+decl_player: NUMBER player_type WORD STAR VALUE CARD CARD NEW_LINE {	
 	// Do not free $3 here!
+	//free($3);
 	Player* player = malloc(sizeof(Player));
 
-	player->name = $3;
+	//player->name = $3;
+	player->name = get_string_from_pool(pool, $3);
+	free($3);
 	player->stack = $5;
 	player->card_0.rank = $6[0];
 	player->card_0.suit = $6[1];
@@ -209,9 +212,12 @@ decl_player: NUMBER player_type WORD STAR VALUE CARD CARD NEW_LINE {
 }
            | NUMBER player_type WORD      VALUE CARD CARD NEW_LINE {
 	// Do not free $3 here!
+	
 	Player* player = malloc(sizeof(Player));
 
-	player->name = $3;
+	//player->name = $3;
+	player->name = get_string_from_pool(pool, $3);
+	free($3);
 	player->stack = $4;
 	player->card_0.rank = $5[0];
 	player->card_0.suit = $5[1];
@@ -412,8 +418,8 @@ summary: WORD WIN VALUE word_plus NEW_LINE {
        action
        ;
 
-summary_plus: summary summary_plus
-            | summary
+summary_plus: summary
+            | summary_plus summary
             ;
 
 word_plus: WORD word_plus {

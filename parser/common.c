@@ -9,6 +9,14 @@
 #define dprintf(...)
 #endif
 
+char makeCard(char c[2]) {
+	// rank: 2-9TJQKA
+	// suit: shcd (16, 5, 1, 0)
+
+	// rrrr rrrr rrrs ssss	
+	return ((0x3F & (c[0] - '2')) << 5) | (0x1F & (c[1] - 'c'));
+}
+
 void fillCard(Card *card, const char c[2]) {
 	card->rank = c[0];
 	card->suit = c[1];
@@ -300,7 +308,8 @@ void free_hand(Hand* hand) {
 
 	if(hand->players.size) {
 		for(i = 0; i < hand->players.size; ++i) {
-			free(hand->players.ptr[i]->name);
+			// do not free player name, comes from pool
+			//free(hand->players.ptr[i]->name);
 			free(hand->players.ptr[i]);
 		}
 		free(hand->players.ptr);
