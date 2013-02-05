@@ -6,7 +6,7 @@
 #include "common.h"
 #include "mem_dbg.h"
 
-int lineno = 0;
+int lineno = 1;
 
 #define _POKER_LEX_NO_DEBUG
 #ifdef _POKER_LEX_NO_DEBUG
@@ -138,23 +138,36 @@ allin "(all-in)"
 	return WORD;
 }
 
-\${numeric}(\.{numeric})? {
+\${numeric}(\,{numeric}{3})*(\.{numeric})? {
 	// exclude the initial '$' char
-	yylval.f_value = atof(yytext + 1); 
+	int i, y, len = strlen(yytext);
+	char* _id_ptr = malloc(len + 1);
+	bzero(_id_ptr, len + 1);
+
+	// Copy only numeric chars and the '.'
+	for(i = 1, y = 0; i < len; ++i) {
+		if(yytext[i] == '.' || (yytext[i] >= '0' && yytext[i] <= '9')) {
+			_id_ptr[y++] = yytext[i];
+		}
+	}
+
+	yylval.f_value = atof(_id_ptr); 
 
 	ldprintf("value(%.2f) ", yylval.f_value);
+
+	free(_id_ptr);
 
 	return VALUE;
 }
 
 #{numeric}(\,{numeric}{3})* {
   // we need to treat the string  
-  int i = 0, y = 0, len = strlen(yytext);
+  int i, y, len = strlen(yytext);
   char* _id_ptr = malloc(len + 1);
   bzero(_id_ptr, len + 1);
  
   // Copy only numeric chars
-  for(; i < len; ++i) {
+  for(i = 1, y = 0; i < len; ++i) {
 		if(yytext[i] >= '0' && yytext[i] <= '9') {
 			_id_ptr[y++] = yytext[i];
 		}
