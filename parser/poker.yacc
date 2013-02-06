@@ -1,11 +1,12 @@
 %{
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "common.h"
 #include "mem_dbg.h"
 
-#define _POKER_LEX_NO_DEBUG
+	//#define _POKER_LEX_NO_DEBUG
 #ifdef _POKER_LEX_NO_DEBUG
 #undef dprintf
 #define dprintf(...)
@@ -40,11 +41,14 @@
 	} r_value;
 
 	enum {
-		fold,
-		call,
-		check,
-		raise,
-		bet,
+		fold = 0,
+
+		call = 1,
+		check = 2,
+
+		raise = 3,
+		bet = 4,
+
 		post,
 		
 		IGNORE
@@ -119,7 +123,7 @@ hand_end {
 	copy_itemPlayer_to_PlayerBuf(&hand->players, ($6));
 	
 	hand->r_0 = malloc(sizeof(Preflop));
-	copy_itemAction_to_ActionBuf(&hand->r_0->actions, ($8));
+	copy_itemAction_to_ActionBuf(&hand->players, &hand->r_0->actions, ($8));
 
 	copy_itemRawRound_to_Hand(hand, ($10));
 
@@ -150,10 +154,10 @@ hand_end {
 	copy_itemPlayer_to_PlayerBuf(&hand->players, ($6));
 	
 	hand->r_0 = malloc(sizeof(Preflop));
-	copy_itemAction_to_ActionBuf(&hand->r_0->actions, ($8));
+	copy_itemAction_to_ActionBuf(&hand->players, &hand->r_0->actions, ($8));
 
 	// do something with hand
-	print_hand(hand);
+	//print_hand(hand);
 
 	// free hand
 	free_hand(hand);
@@ -310,12 +314,23 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 //--
   // <player> posts big blind <value> (all-in)
   // <player> posts small blind <value> (all-in)
-	free($1); free($3); free($4); 
+	free($4); 
 
 	Action* action = malloc(sizeof(Action));
 
-	action->player = NULL;	
-	action->type = (ActionType)($2);
+	action->player.name = get_string_from_pool(pool, $1);
+	FAIL_IF((!action->player.name), "Unable to get string %s from pool", $1);
+	free($1);
+
+	if(! strcmp($3, "small")) {
+		action->type = a_small_blind;
+	} else if(! strcmp($3, "big")) {
+		action->type = a_big_blind;
+	} else {
+		FAIL_IF(1, "Unexpected post %s\n", $3);
+	}
+
+	free($3);
 
 	$$ = (void*) action;
 }
@@ -323,11 +338,14 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 //--
   // <player> posts big blind <value>
   // <player> posts small blind <value>
-	free($1); free($3); free($4); 
+	free($3); free($4); 
 
 	Action* action = malloc(sizeof(Action));
 
-	action->player = NULL;	
+	action->player.name = get_string_from_pool(pool, $1);
+	FAIL_IF((!action->player.name), "Unable to get string %s from pool", $1);
+	free($1);
+
 	action->type = (ActionType)($2);
 
 	$$ = (void*) action;
@@ -336,27 +354,29 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 // --	
   // <player> calls <value> (all-in)
   // <player> raises <value> (all-in)
-	free($1);
-
 	Action* action = malloc(sizeof(Action));
 
-	action->player = NULL;	
+	action->player.name = get_string_from_pool(pool, $1);
+	FAIL_IF((!action->player.name), "Unable to get string %s from pool", $1);
+	free($1);
+
 	action->type = $2;
 
-	$$ = (void*) action;	
+	$$ = (void*) action;
 }
       | WORD ACTION VALUE NEW_LINE {
 // --	
   // <player> calls <value>
   // <player> raises <value>
-	free($1);
-
 	Action* action = malloc(sizeof(Action));
 
-	action->player = NULL;	
+	action->player.name = get_string_from_pool(pool, $1);
+	FAIL_IF((!action->player.name), "Unable to get string %s from pool", $1);
+	free($1);
+
 	action->type = $2;
 
-	$$ = (void*) action;	
+	$$ = (void*) action;
 }
       | WORD ACTION CARD CARD NEW_LINE {
 //--
@@ -369,17 +389,19 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 //--
   // <player> folds
   // <player> mucks
-	free($1);
   if(IGNORE == $2) {
 		$$ = NULL;
 	} else {
 		Action* action = malloc(sizeof(Action));
-		action->player = NULL;
+
+		action->player.name = get_string_from_pool(pool, $1);
+		FAIL_IF((!action->player.name), "Unable to get string %s from pool", $1);
+
 		action->type = $2;
 
 		$$ = (void*) action;	
 	}
-	
+	free($1);
 }
       ;
 
@@ -387,6 +409,7 @@ action_plus: action {
 	if(NULL == $1) {
 		$$ = NULL;
 	} else {
+		dprintf("single ...\n");
 		list_itemAction* r = new_itemAction($1);
 		$$ = (void*) r;
 	}
@@ -400,7 +423,7 @@ action_plus: action {
 		if(NULL != $1) {
 			append_itemAction(r, $1);
 		}
-		$$ = (void*) r;	
+		$$ = (void*) $1;
 	}
 }
            ;

@@ -51,8 +51,12 @@ list_itemAction* new_itemAction(const Action* action) {
 	return ret;
 }
 
-void append_itemAction(list_itemAction* new_head, const list_itemAction* tail) {
-	new_head->next = (list_itemAction*) tail;
+void append_itemAction(list_itemAction* new_head, list_itemAction* tail) {
+	list_itemAction* end = tail;
+
+	// find end of the tail
+	for(; end->next != NULL; end = end->next);
+	end->next = new_head;
 }
 
 
@@ -109,7 +113,30 @@ void print_hand(const Hand *h) {
 }
 
 void print_action(const Action* a) {
-	printf("Action %d\n", a->type);
+	printf("Action: player %s make ", a->player.ptr->name);
+	switch(a->type) {
+	case a_fold:
+		printf("fold\n");
+		return;
+	case a_call:
+		printf("call\n");
+		return;
+	case a_check:
+		printf("check\n");
+		return;
+	case a_raise:
+		printf("raise\n");
+		return;
+	case a_bet:
+		printf("bet\n");
+		return;
+	case a_small_blind:
+		printf("small blind\n");
+		return;
+	case a_big_blind:
+		printf("small blind\n");
+		return;
+	}
 }
 
 void print_player(const Player* p) {
@@ -162,11 +189,20 @@ void copy_itemPlayer_to_PlayerBuf(PlayerBuf* dest, const list_itemPlayer* list) 
 	}
 }
 
-void copy_itemAction_to_ActionBuf(ActionBuf* dest, const list_itemAction* list) {
+#define DEBUG_COPY_ACTION
+
+void copy_itemAction_to_ActionBuf(const PlayerBuf* players, 
+																	ActionBuf* dest, 
+																	const list_itemAction* list) {
+	//--
 	list_itemAction* actions = (list_itemAction*)list;
 	list_itemAction* curr = actions, *tmp;
-	int len = 0, i = 0;
+	int len = 0, i, y;
+#ifdef DEBUG_COPY_ACTION
+	char found;
+#endif
 
+	// get action length
 	for(; curr != NULL; curr = curr->next, ++len); 
 
 	dprintf("# actions: %d\n", len);	
@@ -175,14 +211,35 @@ void copy_itemAction_to_ActionBuf(ActionBuf* dest, const list_itemAction* list) 
 	dest->size = (char) len;
 	dest->ptr = malloc(sizeof(Action) * len);
 
-	for(i=0, curr = actions; i < len; ++i) {
+	for(i = 0, curr = actions; i < len; ++i) {
 		dest->ptr[i] = curr->value;
+
+#ifdef DEBUG_COPY_ACTION
+		found = 0;
+#endif
+
+		// find player
+		for(y = 0; y < players->size; ++y) {
+			if(!strcmp(dest->ptr[i]->player.name, players->ptr[y]->name)) {
+				dest->ptr[i]->player.ptr = players->ptr[y];
+#ifdef DEBUG_COPY_ACTION
+				found = 1;
+#endif
+			}
+		}
+
+#ifdef DEBUG_COPY_ACTION
+		FAIL_IF((!found), "Unable to find ptr to player!");
+#endif
+
 		// free current node
 		tmp = curr->next;
 		free(curr);
 		curr = tmp;
 	}
 }
+
+#undef DEBUG_COPY_ACTION
 
 // inits and fills the necessary structs
 void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
@@ -196,7 +253,9 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 		return;
 	}
 	dest->r_1 = malloc(sizeof(Flop));
-	copy_itemAction_to_ActionBuf(&dest->r_1->actions, curr_round->value->actions);
+	copy_itemAction_to_ActionBuf(&dest->players, 
+															 &dest->r_1->actions, 
+															 curr_round->value->actions);
 	// Read all cards of the board
 	// free as we walk
 	for(i = 0, curr_cards = curr_round->value->cards; 
@@ -219,7 +278,9 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 		return;
 	}
 	dest->r_2 = malloc(sizeof(Turn));
-	copy_itemAction_to_ActionBuf(&dest->r_2->actions, curr_round->value->actions);
+	copy_itemAction_to_ActionBuf(&dest->players, 
+															 &dest->r_2->actions, 
+															 curr_round->value->actions);
 	// Find last card
 	// free as we walk
 	curr_cards = curr_round->value->cards;
@@ -244,7 +305,9 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 		return;
 	}
 	dest->r_3 = malloc(sizeof(River));
-	copy_itemAction_to_ActionBuf(&dest->r_3->actions, curr_round->value->actions);
+	copy_itemAction_to_ActionBuf(&dest->players, 
+															 &dest->r_3->actions, 
+															 curr_round->value->actions);
 	// Find last card
 	// free as we walk
 	curr_cards = curr_round->value->cards;

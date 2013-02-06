@@ -52,16 +52,23 @@ typedef struct {
 } PlayerBuf;
 
 typedef enum {
-	a_fold,
-	a_call,
-	a_check,
-	a_raise,
-	a_bet,
-	a_post
+	a_fold = 0,
+
+	a_call = 1,
+	a_check = 2,
+
+	a_raise = 3,
+	a_bet = 4,
+
+	a_small_blind = 5,
+	a_big_blind = 6,
 } ActionType;
 
 typedef struct {
-	Player* player;
+  union {
+		char* name;
+		Player* ptr;
+	} player;
 	ActionType type;
 } Action;
 
@@ -145,7 +152,7 @@ typedef struct _list_itemAction {
 	Action* value;
 	struct _list_itemAction *next;
 } list_itemAction;
-void append_itemAction(list_itemAction* new_head, const list_itemAction* tail);
+void append_itemAction(list_itemAction* new_head, list_itemAction* tail);
 list_itemAction* new_itemAction(const Action* action);
 
 
@@ -165,7 +172,7 @@ list_itemRawRound* new_itemRawRound(const RawRound* rawRound);
 void print_bytes(const void *ptr, const int len);
 
 void copy_itemPlayer_to_PlayerBuf(PlayerBuf* dest, const list_itemPlayer* list);
-void copy_itemAction_to_ActionBuf(ActionBuf* dest, const list_itemAction* list);
+void copy_itemAction_to_ActionBuf(const PlayerBuf* players, ActionBuf* dest, const list_itemAction* list);
 void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list);
 
 void free_hand(Hand* hand);
