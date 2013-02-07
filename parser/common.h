@@ -48,7 +48,7 @@ typedef struct {
 
 typedef struct {
 	char size;
-	Player** ptr;
+	Player* ptr;
 } PlayerBuf;
 
 typedef enum {
@@ -74,7 +74,7 @@ typedef struct {
 
 typedef struct {
 	char size;
-	Action** ptr;
+	Action* ptr;
 } ActionBuf;
 
 typedef struct {
@@ -99,10 +99,10 @@ typedef struct {
 typedef struct {
 	int id;
 	Blind blinds;
-	Preflop *r_0;
-	Flop *r_1;
-	Turn *r_2;
-	River *r_3;
+	Preflop r_0;
+	Flop r_1;
+	Turn r_2;
+	River r_3;
 	PlayerBuf players;
 } Hand;
 

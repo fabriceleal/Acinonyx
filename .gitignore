@@ -5,3 +5,4 @@ parser/poker
 parser/y.tab.c
 parser/y.tab.h
 tests/*
+*.tpl

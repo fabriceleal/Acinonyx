@@ -81,35 +81,35 @@ void print_hand(const Hand *h) {
 	printf("Big: %.2f\n", h->blinds.big);
 	printf("Players: %d\n", h->players.size);
 	for(i = 0; i < h->players.size; ++i) {
-		print_player(h->players.ptr[i]);
+		print_player(h->players.ptr + i);
 	}
 	printf("Preflop\n");
-	for(i = 0; i < h->r_0->actions.size; ++i) {
-		print_action(h->r_0->actions.ptr[i]);
+	for(i = 0; i < h->r_0.actions.size; ++i) {
+		print_action(h->r_0.actions.ptr + i);
 	}
-	if(h->r_1) {
+	if(h->r_1.actions.size) {
 		printf("Flop\n");
 		for(i = 0; i < 3; ++i) {
-			print_card(&h->r_1->cards[i]);
+			print_card(&h->r_1.cards[i]);
 		}
-		for(i = 0; i < h->r_1->actions.size; ++i) {
-			print_action(h->r_1->actions.ptr[i]);
+		for(i = 0; i < h->r_1.actions.size; ++i) {
+			print_action(h->r_1.actions.ptr + i);
 		}		
 	}
-	if(h->r_2) {
+	if(h->r_2.actions.size) {
 		printf("Turn\n");
-		print_card(&h->r_2->card);
-		for(i = 0; i < h->r_2->actions.size; ++i) {
-			print_action(h->r_2->actions.ptr[i]);
+		print_card(&h->r_2.card);
+		for(i = 0; i < h->r_2.actions.size; ++i) {
+			print_action(h->r_2.actions.ptr + i);
 		}
 	}
-	if(h->r_3) {
+	if(h->r_3.actions.size) {
 		printf("River\n");
-		print_card(&h->r_3->card);
-		for(i = 0; i < h->r_3->actions.size; ++i) {
-			print_action(h->r_3->actions.ptr[i]);
+		print_card(&h->r_3.card);
+		for(i = 0; i < h->r_3.actions.size; ++i) {
+			print_action(h->r_3.actions.ptr + i);
 		}
-	} 
+	} /**/
 }
 
 void print_action(const Action* a) {
@@ -181,7 +181,10 @@ void copy_itemPlayer_to_PlayerBuf(PlayerBuf* dest, const list_itemPlayer* list) 
 	dest->ptr = malloc(sizeof(Player) * len);
 
 	for(i=0, curr = players; i < len; ++i) {
-		dest->ptr[i] = curr->value;
+		//dest->ptr[i] = curr->value;
+		memcpy(dest->ptr + i, curr->value, sizeof(Player));
+		free(curr->value);
+
 		// free current node
 		tmp = curr->next;
 		free(curr);
@@ -212,25 +215,28 @@ void copy_itemAction_to_ActionBuf(const PlayerBuf* players,
 	dest->ptr = malloc(sizeof(Action) * len);
 
 	for(i = 0, curr = actions; i < len; ++i) {
-		dest->ptr[i] = curr->value;
+		//dest->ptr[i] = curr->value;
+		memcpy(dest->ptr + i, curr->value, sizeof(Action));
 
 #ifdef DEBUG_COPY_ACTION
 		found = 0;
 #endif
-
+		/**/
 		// find player
 		for(y = 0; y < players->size; ++y) {
-			if(!strcmp(dest->ptr[i]->player.name, players->ptr[y]->name)) {
-				dest->ptr[i]->player.ptr = players->ptr[y];
+			if(! strcmp(dest->ptr[i].player.name, players->ptr[y].name)) {
+				dest->ptr[i].player.ptr = &players->ptr[y];
 #ifdef DEBUG_COPY_ACTION
 				found = 1;
 #endif
 			}
 		}
-
+		
 #ifdef DEBUG_COPY_ACTION
 		FAIL_IF((!found), "Unable to find ptr to player!");
 #endif
+
+		free(curr->value);
 
 		// free current node
 		tmp = curr->next;
@@ -252,9 +258,8 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 	if(NULL == curr_round) {
 		return;
 	}
-	dest->r_1 = malloc(sizeof(Flop));
 	copy_itemAction_to_ActionBuf(&dest->players, 
-															 &dest->r_1->actions, 
+															 &dest->r_1.actions, 
 															 curr_round->value->actions);
 	// Read all cards of the board
 	// free as we walk
@@ -262,7 +267,7 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 			NULL != curr_cards; 
 			++i) {
 		//--
-		dest->r_1->cards[i] = curr_cards->value;
+		dest->r_1.cards[i] = curr_cards->value;
 		tmp = curr_cards;
 		curr_cards = curr_cards->next;
 		free(tmp);
@@ -277,9 +282,8 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 	if(NULL == curr_round) {
 		return;
 	}
-	dest->r_2 = malloc(sizeof(Turn));
-	copy_itemAction_to_ActionBuf(&dest->players, 
-															 &dest->r_2->actions, 
+	copy_itemAction_to_ActionBuf(&dest->players,
+															 &dest->r_2.actions,
 															 curr_round->value->actions);
 	// Find last card
 	// free as we walk
@@ -290,7 +294,7 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 		free(tmp);
 	}
 	// card of the river is the last card of the round
-	dest->r_2->card = curr_cards->value;
+	dest->r_2.card = curr_cards->value;
 	// free last card
 	free(curr_cards);
 
@@ -304,9 +308,8 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 	if(NULL == curr_round) {
 		return;
 	}
-	dest->r_3 = malloc(sizeof(River));
-	copy_itemAction_to_ActionBuf(&dest->players, 
-															 &dest->r_3->actions, 
+	copy_itemAction_to_ActionBuf(&dest->players,
+															 &dest->r_3.actions,
 															 curr_round->value->actions);
 	// Find last card
 	// free as we walk
@@ -317,7 +320,7 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 		free(tmp);
 	}
 	// card of the river is the last card of the round
-	dest->r_3->card = curr_cards->value;
+	dest->r_3.card = curr_cards->value;
 	// free last card
 	free(curr_cards);
 
@@ -329,52 +332,26 @@ void copy_itemRawRound_to_Hand(Hand* dest, const list_itemRawRound* list) {
 void free_hand(Hand* hand) {
 	int i;
 
-	if(hand->r_0) {
-		if(hand->r_0->actions.ptr) {
-			for(i = 0; i < hand->r_0->actions.size; ++i) {
-				free(hand->r_0->actions.ptr[i]);
-			}
-			free(hand->r_0->actions.ptr);
-		}
-		free(hand->r_0);
+
+	if(hand->r_0.actions.ptr) {		
+		free(hand->r_0.actions.ptr);
 	}
 
-	if(hand->r_1) {
-		if(hand->r_1->actions.ptr) {
-			for(i = 0; i < hand->r_1->actions.size; ++i) {
-				free(hand->r_1->actions.ptr[i]);
-			}
-			free(hand->r_1->actions.ptr);
-		}
-		free(hand->r_1);
+	if(hand->r_1.actions.ptr) {		
+		free(hand->r_1.actions.ptr);
 	}
 
-	if(hand->r_2) {
-		if(hand->r_2->actions.ptr) {
-			for(i = 0; i < hand->r_2->actions.size; ++i) {
-				free(hand->r_2->actions.ptr[i]);
-			}
-			free(hand->r_2->actions.ptr);
-		}
-		free(hand->r_2);
+	if(hand->r_2.actions.ptr) {		
+		free(hand->r_2.actions.ptr);
 	}
 
-	if(hand->r_3) {
-		if(hand->r_3->actions.ptr) {
-			for(i = 0; i < hand->r_3->actions.size; ++i) {
-				free(hand->r_3->actions.ptr[i]);
-			}
-			free(hand->r_3->actions.ptr);
-		}
-		free(hand->r_3);
+	if(hand->r_3.actions.ptr) {		
+		free(hand->r_3.actions.ptr);
 	}
 
-	if(hand->players.size) {
-		for(i = 0; i < hand->players.size; ++i) {
-			// do not free player name, comes from pool
-			//free(hand->players.ptr[i]->name);
-			free(hand->players.ptr[i]);
-		}
+	if(hand->players.size) {		
+		// do not free player name, comes from pool
+		//free(hand->players.ptr[i]->name);
 		free(hand->players.ptr);
 	}
 

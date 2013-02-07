@@ -120,17 +120,25 @@ hand_end {
 	hand->blinds.small = $2.f_small;
 	hand->blinds.big = $2.f_big;
 
+	printf("copying stuff from linked lists ...\n");
+
 	copy_itemPlayer_to_PlayerBuf(&hand->players, ($6));
+
+	printf("copying actions\n");
 	
-	hand->r_0 = malloc(sizeof(Preflop));
-	copy_itemAction_to_ActionBuf(&hand->players, &hand->r_0->actions, ($8));
+	copy_itemAction_to_ActionBuf(&hand->players, &hand->r_0.actions, ($8));
+
+	printf("\n");
 
 	copy_itemRawRound_to_Hand(hand, ($10));
 
 	// do something with hand
+	printf("printing hand\n");
 	print_hand(hand);
+	//do_serialize_test(hand);
 
 	// free hand
+	printf("freeing hand\n");
 	free_hand(hand);
 } | decl_hand
            decl_blinds
@@ -151,15 +159,21 @@ hand_end {
 	hand->blinds.small = $2.f_small;
 	hand->blinds.big = $2.f_big;
 
+	printf("copying stuff from linked lists ...\n");
+
 	copy_itemPlayer_to_PlayerBuf(&hand->players, ($6));
+
+	printf("copying actions\n");
 	
-	hand->r_0 = malloc(sizeof(Preflop));
-	copy_itemAction_to_ActionBuf(&hand->players, &hand->r_0->actions, ($8));
+	copy_itemAction_to_ActionBuf(&hand->players, &hand->r_0.actions, ($8));
 
 	// do something with hand
-	//print_hand(hand);
+	printf("printing hand\n");
+	print_hand(hand);
+	//do_serialize_test(hand);
 
 	// free hand
+	printf("freeing hand\n");
 	free_hand(hand);
 }
 
