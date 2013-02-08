@@ -276,6 +276,8 @@ int main(int argc, char** argv) {
 
 	pool = init_pool();
 
+	open_serialize("tmp.tpl");
+
 	// Lex!
 	//while(val = yylex()) {
 	//		dprintf("value is %d\n", val);
@@ -291,6 +293,8 @@ int main(int argc, char** argv) {
 	//}
 
 	destroy_pool(pool);
+
+	close_serialize();
 
 	return 0;
 }

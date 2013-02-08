@@ -6,7 +6,7 @@
 #include "common.h"
 #include "mem_dbg.h"
 
-	//#define _POKER_LEX_NO_DEBUG
+#define _POKER_LEX_NO_DEBUG
 #ifdef _POKER_LEX_NO_DEBUG
 #undef dprintf
 #define dprintf(...)
@@ -120,25 +120,25 @@ hand_end {
 	hand->blinds.small = $2.f_small;
 	hand->blinds.big = $2.f_big;
 
-	printf("copying stuff from linked lists ...\n");
+	dprintf("copying stuff from linked lists ...\n");
 
 	copy_itemPlayer_to_PlayerBuf(&hand->players, ($6));
 
-	printf("copying actions\n");
+	dprintf("copying actions\n");
 	
 	copy_itemAction_to_ActionBuf(&hand->players, &hand->r_0.actions, ($8));
 
-	printf("\n");
+	dprintf("\n");
 
 	copy_itemRawRound_to_Hand(hand, ($10));
 
 	// do something with hand
-	printf("printing hand\n");
+	dprintf("printing hand\n");
 	//print_hand(hand);
-	do_serialize_test(hand);
+	serialize(hand);
 
 	// free hand
-	printf("freeing hand\n");
+	dprintf("freeing hand\n");
 	free_hand(hand);
 } | decl_hand
            decl_blinds
@@ -159,21 +159,21 @@ hand_end {
 	hand->blinds.small = $2.f_small;
 	hand->blinds.big = $2.f_big;
 
-	printf("copying stuff from linked lists ...\n");
+	dprintf("copying stuff from linked lists ...\n");
 
 	copy_itemPlayer_to_PlayerBuf(&hand->players, ($6));
 
-	printf("copying actions\n");
+	dprintf("copying actions\n");
 	
 	copy_itemAction_to_ActionBuf(&hand->players, &hand->r_0.actions, ($8));
 
 	// do something with hand
-	printf("printing hand\n");
+	dprintf("printing hand\n");
 	//print_hand(hand);
-	do_serialize_test(hand);
+	serialize(hand);
 
 	// free hand
-	printf("freeing hand\n");
+	dprintf("freeing hand\n");
 	free_hand(hand);
 }
 
