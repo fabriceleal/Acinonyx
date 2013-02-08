@@ -113,7 +113,7 @@ void print_hand(const Hand *h) {
 }
 
 void print_action(const Action* a) {
-	printf("Action: player %s make ", a->player.ptr->name);
+	printf("Action: player %s make ", a->player.name);
 	switch(a->type) {
 	case a_fold:
 		printf("fold\n");
@@ -217,11 +217,11 @@ void copy_itemAction_to_ActionBuf(const PlayerBuf* players,
 	for(i = 0, curr = actions; i < len; ++i) {
 		//dest->ptr[i] = curr->value;
 		memcpy(dest->ptr + i, curr->value, sizeof(Action));
-
+/*
 #ifdef DEBUG_COPY_ACTION
 		found = 0;
 #endif
-		/**/
+		
 		// find player
 		for(y = 0; y < players->size; ++y) {
 			if(! strcmp(dest->ptr[i].player.name, players->ptr[y].name)) {
@@ -235,7 +235,7 @@ void copy_itemAction_to_ActionBuf(const PlayerBuf* players,
 #ifdef DEBUG_COPY_ACTION
 		FAIL_IF((!found), "Unable to find ptr to player!");
 #endif
-
+*/
 		free(curr->value);
 
 		// free current node

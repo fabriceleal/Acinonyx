@@ -67,7 +67,7 @@ typedef enum {
 typedef struct {
   union {
 		char* name;
-		Player* ptr;
+		//Player* ptr;
 	} player;
 	ActionType type;
 } Action;

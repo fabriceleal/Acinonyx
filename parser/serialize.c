@@ -1,41 +1,54 @@
 #include "serialize.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <tpl.h>
 
-#define TPL_FORMAT "S(i$(ff))"
+
 
 void debug_print(char* title, Hand* hand) {
-	printf("%s\n", title);
-	printf(" id: %d\n", hand->id);
-	printf(" small: %f\n", hand->blinds.small);
-	printf(" big: %f\n", hand->blinds.big);
+
 }
 
 void serialize(Hand* hand) {
-	debug_print("BEFORE", hand);
+	FILE* f = fopen("test.tpl", "w");
 
-	tpl_node *tn;
-	tn = tpl_map(TPL_FORMAT, hand);
-	tpl_pack(tn, 0);
-	tpl_dump(tn, TPL_FILE, "tmp.tpl");
-	tpl_free(tn);
+	// id
+	fwrite(&hand->id, sizeof(int), 1, f);
+
+	// blinds
+	fwrite(&hand->blinds.small, sizeof(float), 1, f);
+	fwrite(&hand->blinds.big, sizeof(float), 1, f);
+
+	// rounds
+	// * preflop
+	fwrite(&hand->r_0.actions.size, sizeof(char), 1, f);
+	fwrite(&hand->r_0.actions.ptr, sizeof(Action), hand->r_0.actions.size, f);
+
+	// * flop
+	fwrite(&hand->r_1.actions.size, sizeof(char), 1, f);
+	fwrite(&hand->r_1.actions.ptr, sizeof(Action), hand->r_1.actions.size, f);
+
+	// * turn
+	fwrite(&hand->r_2.actions.size, sizeof(char), 1, f);
+	fwrite(&hand->r_2.actions.ptr, sizeof(Action), hand->r_2.actions.size, f);
+
+	// * river
+	fwrite(&hand->r_3.actions.size, sizeof(char), 1, f);
+	fwrite(&hand->r_3.actions.ptr, sizeof(Action), hand->r_3.actions.size, f);
+
+	// players
+
+	fclose(f);
 }
 
-void deserialize() {
-	Hand* hand = malloc(sizeof(Hand));
-	tpl_node *tn;
-	tn = tpl_map(TPL_FORMAT, hand);
-	tpl_load(tn, TPL_FILE, "tmp.tpl");
-	tpl_unpack(tn, 0);
-	tpl_free(tn);
-
-	debug_print("AFTER", hand);
+Hand* deserialize() {
+	
 }
 
 void do_serialize_test(Hand* hand) {
-	return;
-
+	//	return;
+	debug_print("BEFORE", hand);
 	serialize(hand);
-	deserialize();
+	Hand* test = deserialize();
+	debug_print("AFTER", test);
+	free(test);
 }

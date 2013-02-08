@@ -134,8 +134,8 @@ hand_end {
 
 	// do something with hand
 	printf("printing hand\n");
-	print_hand(hand);
-	//do_serialize_test(hand);
+	//print_hand(hand);
+	do_serialize_test(hand);
 
 	// free hand
 	printf("freeing hand\n");
@@ -169,8 +169,8 @@ hand_end {
 
 	// do something with hand
 	printf("printing hand\n");
-	print_hand(hand);
-	//do_serialize_test(hand);
+	//print_hand(hand);
+	do_serialize_test(hand);
 
 	// free hand
 	printf("freeing hand\n");
