@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <errno.h>
 
 void serialize_action(Action* action, FILE* f) {
 	char len = (char) strlen(action->player.name);
@@ -24,10 +24,11 @@ FILE* f;
 
 void open_serialize(char* filename) {
 	f = fopen(filename, "w");
+	FAIL_IF(NULL == f, "Error opening file %s for writing\n", filename);
 }
 
 void close_serialize() {
-	fclose(f);
+	FAIL_IF(0 != fclose(f), "Error closing file for writing, errno: %d\n", errno);
 }
 
 void serialize(Hand* hand) {

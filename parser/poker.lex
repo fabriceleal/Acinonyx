@@ -263,12 +263,11 @@ int main(int argc, char** argv) {
 	FILE* file;
 
 	// Check number of arguments
-	FAIL_IF(2 != argc, "Invalid number of arguments (%d)\n", argc);
+	FAIL_IF(3 != argc, "Invalid number of arguments (%d); usage: %s <input> <output>\n", argc, argv[0]);
 
 	// Open file
-	//file = fopen("../tests/000.txt" /*argv[1]*/, "r");
 	file = fopen(argv[1], "r");
-	FAIL_IF(NULL == file, "Error opening file %s\n", argv[1]);
+	FAIL_IF(NULL == file, "Error opening file %s for reading\n", argv[1]);
 	
 	yyin = file;
 
@@ -276,21 +275,12 @@ int main(int argc, char** argv) {
 
 	pool = init_pool();
 
-	open_serialize("tmp.tpl");
-
-	// Lex!
-	//while(val = yylex()) {
-	//		dprintf("value is %d\n", val);
-	//}
+	open_serialize(argv[2]);
 	
 	// Parse!
 	yyparse();
 
 	yylex_destroy();
-
-	//if(hand != NULL) {
-	//print_hand(hand);
-	//}
 
 	destroy_pool(pool);
 
