@@ -12,5 +12,8 @@ Parser for poker hand histories written with lex/yacc.
 
 ## ...
 
+Using dummy char* pool. char* stored in linked list.
+
 Do test:
 `valgrind --leak-check=full --show-reachable=yes --track-origins=yes <exe> <args...>`
+This parser doesnt have leaks! :D
