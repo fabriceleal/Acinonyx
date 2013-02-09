@@ -6,6 +6,7 @@
 
 void serialize_action(Action* action, FILE* f) {
 	char len = (char) strlen(action->player.name);
+	fwrite(&len, sizeof(char), 1, f);
 	fwrite(action->player.name, sizeof(char), len, f);
 	fwrite(&action->type, sizeof(ActionType), 1, f);
 }
