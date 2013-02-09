@@ -2,6 +2,7 @@
 *.o
 parser/lex.yy.c
 parser/poker
+parser/sizes
 parser/y.tab.c
 parser/y.tab.h
 tests/*
