@@ -311,15 +311,26 @@ board: PHASE COLON card_plus NEW_LINE {
 }
      ;
 
-card_plus: CARD {
+// Lets cheat and assume this is either 3/4/5 cards
+// In the case of 4/5 cards, only bring the last one
+card_plus: CARD CARD CARD {
 //--
-	list_itemCard* r = new_itemCard($1);
+	list_itemCard* r1 = new_itemCard($1);
+	list_itemCard* r2 = new_itemCard($2);
+	list_itemCard* r3 = new_itemCard($3);
+	append_itemCard(r1, r2);
+	append_itemCard(r2, r3);
+
+  $$ = (void*) r1;
+}
+         | CARD CARD CARD CARD {
+//--
+	list_itemCard* r = new_itemCard($4);
   $$ = (void*) r;
 }
-         | card_plus CARD {
+         | CARD CARD CARD CARD CARD {
 //--
-	list_itemCard* r = new_itemCard($2);
-	append_itemCard(r, (list_itemCard*) $1);
+	list_itemCard* r = new_itemCard($5);
   $$ = (void*) r;
 }
          ;
