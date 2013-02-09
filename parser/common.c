@@ -134,7 +134,7 @@ void print_action(const Action* a) {
 		printf("small blind\n");
 		return;
 	case a_big_blind:
-		printf("small blind\n");
+		printf("big blind\n");
 		return;
 	}
 }

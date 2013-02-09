@@ -49,9 +49,9 @@
 		raise = 3,
 		bet = 4,
 
-		post,
+		post = 5,
 		
-		IGNORE
+		IGNORE = 128
 	} a_value;
 
 	void *ptr;
@@ -134,6 +134,7 @@ hand_end {
 
 	// do something with hand
 	dprintf("printing hand\n");
+
 	//print_hand(hand);
 	serialize(hand);
 
@@ -169,6 +170,7 @@ hand_end {
 
 	// do something with hand
 	dprintf("printing hand\n");
+
 	//print_hand(hand);
 	serialize(hand);
 
@@ -363,7 +365,7 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 //--
   // <player> posts big blind <value>
   // <player> posts small blind <value>
-	free($3); free($4); 
+  free($4); 
 
 	Action* action = malloc(sizeof(Action));
 
@@ -371,7 +373,15 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 	FAIL_IF((!action->player.name), "Unable to get string %s from pool", $1);
 	free($1);
 
-	action->type = (ActionType)($2);
+	if(! strcmp($3, "small")) {
+		action->type = a_small_blind;
+	} else if(! strcmp($3, "big")) {
+		action->type = a_big_blind;
+	} else {
+		FAIL_IF(1, "Unexpected post %s\n", $3);
+	}
+
+	free($3);
 
 	$$ = (void*) action;
 }
@@ -379,11 +389,15 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 // --	
   // <player> calls <value> (all-in)
   // <player> raises <value> (all-in)
+	// <player> bets <value> (all-in)
 	Action* action = malloc(sizeof(Action));
 
 	action->player.name = get_string_from_pool(pool, $1);
-	FAIL_IF((!action->player.name), "Unable to get string %s from pool", $1);
+	FAIL_IF((!action->player.name), "Unable to get string %s from pool\n", $1);
 	free($1);
+
+	FAIL_IF((call != $2 && raise != $2 && bet != $2), 
+					"Unexpected action %d!\n", $2);
 
 	action->type = $2;
 
@@ -393,11 +407,15 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 // --	
   // <player> calls <value>
   // <player> raises <value>
+	// <player> bets <value>
 	Action* action = malloc(sizeof(Action));
 
 	action->player.name = get_string_from_pool(pool, $1);
-	FAIL_IF((!action->player.name), "Unable to get string %s from pool", $1);
+	FAIL_IF((!action->player.name), "Unable to get string %s from pool\n", $1);
 	free($1);
+
+	FAIL_IF((call != $2 && raise != $2 && bet != $2), 
+					"Unexpected action %d!\n", $2);
 
 	action->type = $2;
 
@@ -408,11 +426,14 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 	// <player> shows <cards>
 	free($1);
 
+	FAIL_IF((IGNORE != $2), "Unexpected action %d\n!", $2);
+
 	$$ = NULL;	
 }
       | WORD ACTION NEW_LINE {
 //--
   // <player> folds
+  // <player> checks
   // <player> mucks
   if(IGNORE == $2) {
 		$$ = NULL;
@@ -420,7 +441,9 @@ action: WORD ACTION WORD WORD VALUE ALLIN NEW_LINE {
 		Action* action = malloc(sizeof(Action));
 
 		action->player.name = get_string_from_pool(pool, $1);
-		FAIL_IF((!action->player.name), "Unable to get string %s from pool", $1);
+		FAIL_IF((!action->player.name), "Unable to get string %s from pool\n", $1);
+
+		FAIL_IF((fold != $2 && check != $2), "Unexpected action %d!\n", $2);
 
 		action->type = $2;
 

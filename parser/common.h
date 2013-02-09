@@ -19,7 +19,7 @@
 // print messages
 #  define FAIL_IF(cond, msg, args...)											\
 	if(cond) {																							\
-		fprintf(stderr, "Condition (%s) occured!\n", #cond);	\
+		fprintf(stderr, "Condition (%s) occured at %s:%d!\n", #cond, __FILE__, __LINE__); \
 		fprintf(stderr, msg, ##args);													\
 		exit(-1);																							\
 	}
@@ -61,7 +61,7 @@ typedef enum {
 	a_bet = 4,
 
 	a_small_blind = 5,
-	a_big_blind = 6,
+	a_big_blind = 6
 } ActionType;
 
 typedef struct {
