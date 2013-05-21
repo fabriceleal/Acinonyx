@@ -1,6 +1,6 @@
 # Acinonyx
 
-Parser for poker hand histories written with lex/yacc.
+Parser for Poker Academy hand histories written with lex/yacc. 
 
 ## Assume:
 * No whitespace inside user names. Only [a-zA-Z]+
